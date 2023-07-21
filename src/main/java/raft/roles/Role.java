@@ -2,7 +2,6 @@ package raft.roles;
 
 import raft.LogEntry;
 import raft.RaftNode;
-import raft.State;
 import raft.request.ClientRequest;
 import raft.request.RPCAppendEntriesRequest;
 import raft.request.RPCRequest;
@@ -22,7 +21,8 @@ public abstract class Role {
         if (response != null) {
             int term = response.getTerm();
             if (term > node.getCurrentTerm()) {
-                node.setState(new State(term, -1, node.getState().getLog()));
+                node.setCurrentTerm(term);
+                node.setVotedFor(-1);
                 this.transitionToFollower(node);
             }
         }
@@ -42,11 +42,8 @@ public abstract class Role {
     public RPCVoteRequestResponse handleRPCVoteRequest(RaftNode node, RPCVoteRequestRequest request) {
         int term = request.getTerm();
         if (term > node.getCurrentTerm()) {
-            node.setState(new State(
-                    term,
-                    request.getCandidateId(),
-                    node.getState().getLog()
-            ));
+            node.setCurrentTerm(term);
+            node.setVotedFor(request.getCandidateId());
             this.transitionToFollower(node);
         }
 
@@ -55,13 +52,10 @@ public abstract class Role {
         }
 
         if ((node.getVotedFor() == -1 || node.getVotedFor() == request.getCandidateId()) &&
-                node.getState().hasLogAtLeastAsUpToDate(request.getLastLogIndex(), request.getLastLogTerm())) {
+                node.getLog().hasLogAtLeastAsUpToDate(request.getLastLogIndex(), request.getLastLogTerm())) {
 
-            node.setState(new State(
-                    term,
-                    request.getCandidateId(),
-                    node.getState().getLog()
-            ));
+            node.setCurrentTerm(term);
+            node.setVotedFor(request.getCandidateId());
             return new RPCVoteRequestResponse(node.getCurrentTerm(), true);
         }
 
@@ -71,7 +65,8 @@ public abstract class Role {
     public RPCAppendEntriesResponse handleRPCAppendEntriesRequest(RaftNode node, RPCAppendEntriesRequest request) {
         int term = request.getTerm();
         if (term >= node.getCurrentTerm()) {
-            node.setState(new State(term, request.getLeaderId(), node.getState().getLog()));
+            node.setCurrentTerm(term);
+            node.setVotedFor(request.getLeaderId());
             this.transitionToFollower(node);
         }
 
@@ -82,7 +77,7 @@ public abstract class Role {
 
         // Reply false if log doesn't contain an entry at prevLogIndex whose term matches prevLogTerm
         try {
-            LogEntry logEntry = node.getState().getLog().get(request.getPrevLogIndex());
+            LogEntry logEntry = node.getLog().getEntryByIndex(request.getPrevLogIndex());
             if (logEntry.getTerm() != request.getPrevLogTerm()) {
                 return new RPCAppendEntriesResponse(node.getCurrentTerm(), false);
             }
@@ -92,16 +87,16 @@ public abstract class Role {
 
         // If an existing entry conflicts with a new one (same index but different terms)
         // delete the existing entry and all that follow it
-        node.getState().resolveConflictsWithNewEntries(request.getEntries());
+        node.getLog().resolveConflictsWithNewEntries(request.getEntries());
 
         // Append new entries not already in the log
-        node.getState().appendEntries(request.getEntries());
+        node.getLog().appendEntries(request.getEntries());
 
         // If leaderCommit > commitIndex,
         // set commitIndex = min(leaderCommit, index of last new entry)
         int leaderCommit = request.getLeaderCommit();
         if(leaderCommit > node.getCommitIndex()){
-            node.setCommitIndex(Math.min(leaderCommit, request.getEntries().stream().mapToInt(entry -> entry.getIndex()).max().orElse(Integer.MAX_VALUE) ));
+            node.setCommitIndex(Math.min(leaderCommit, request.getEntries().stream().mapToInt(entry -> entry.getIndex()).max().orElse(Integer.MAX_VALUE)));
         }
 
         //this.transitionToFollower(node); // I added this

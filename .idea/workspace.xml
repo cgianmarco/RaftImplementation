@@ -5,10 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3cdaa32e-4803-4324-b5b7-79c0349d0c78" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/raft/Log.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/raft/RaftNetworkConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/RaftNetworkConfig.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/raft/RaftNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/RaftNode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/raft/State.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/State.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/State.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/roles/Candidate.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/roles/Candidate.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/roles/Leader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/roles/Leader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/roles/Role.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/roles/Role.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/storage/StorageLayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/storage/StorageLayer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/storage/StorageLayerImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/storage/StorageLayerImpl.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,6 +40,9 @@
       </MavenImportingSettings>
     </option>
   </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectId" id="2Ss9lEbb5jdLeFa1yRlLHybrPbc" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
@@ -58,7 +66,7 @@
       <recent name="raft" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.MainServer3">
+  <component name="RunManager" selected="Application.raft.MainServer1">
     <configuration name="MainServer1" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="org.example.MainServer1" />
       <module name="RaftImplementation" />
@@ -126,9 +134,9 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.MainServer3" />
-        <item itemvalue="Application.raft.MainServer2" />
         <item itemvalue="Application.raft.MainServer1" />
+        <item itemvalue="Application.raft.MainServer2" />
+        <item itemvalue="Application.MainServer3" />
         <item itemvalue="Application.MainServer2" />
         <item itemvalue="Application.MainServer1" />
       </list>

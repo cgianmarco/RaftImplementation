@@ -2,9 +2,8 @@ package raft.storage;
 
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
-import org.mapdb.HTreeMap;
 import org.mapdb.Serializer;
-import raft.State;
+import raft.RaftNode;
 
 import java.io.File;
 import java.util.Optional;
@@ -19,7 +18,7 @@ public class StorageLayerImpl implements StorageLayer{
         this.hashMapMaker = db.hashMap("keyValueMap", Serializer.STRING, Serializer.INTEGER);
     }
     @Override
-    public void persistToDisk(State state) {
+    public void persistToDisk(RaftNode node) {
 //        HTreeMap<String, Integer> keyValueMap = hashMapMaker.createOrOpen();
 //        keyValueMap.put("votedFor", state.getVotedFor());
 //        keyValueMap.put("currentTerm", state.getCurrentTerm());
@@ -27,7 +26,7 @@ public class StorageLayerImpl implements StorageLayer{
     }
 
     @Override
-    public Optional<State> recoverFromDisk() {
+    public Optional<Object> recoverFromDisk() {
 //        HTreeMap<String, Integer> keyValueMap = hashMapMaker.createOrOpen();
 //        Integer votedFor = keyValueMap.get("votedFor");
 //        Integer currentTerm = keyValueMap.get("currentTerm");

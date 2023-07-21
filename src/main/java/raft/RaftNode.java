@@ -21,11 +21,13 @@ public class RaftNode {
     CommunicationLayer communicationLayer;
     StorageLayer storageLayer;
     RaftNetworkConfig config;
-    State state;
+    int currentTerm;
+    int votedFor;
+    Log log;
     int id;
     int commitIndex;
     int lastApplied;
-    Role role;
+    private Role role;
 
     Integer electionInterval;
 
@@ -37,6 +39,7 @@ public class RaftNode {
         this.electionInterval = null;
         this.commitIndex = 0;
         this.lastApplied = 0;
+        this.log = new Log();
 
         this.start();
     }
@@ -53,11 +56,6 @@ public class RaftNode {
     }
 
     public void start() {
-        State state = this.storageLayer
-                .recoverFromDisk()
-                .orElse(new State(0, -1, new ArrayList<>()));
-        this.setState(state);
-
         this.role = new Follower(this);
     }
 
@@ -65,12 +63,32 @@ public class RaftNode {
         // TODO
     }
 
+    public int getCurrentTerm() {
+        return this.currentTerm;
+    }
+
+    public int getVotedFor() {
+        return votedFor;
+    }
+
+    public Log getLog() {
+        return log;
+    }
+
+    public void setCurrentTerm(int currentTerm) {
+        this.currentTerm = currentTerm;
+    }
+
+    public void setVotedFor(int votedFor) {
+        this.votedFor = votedFor;
+    }
+
     public void setCommitIndex(int commitIndex) {
         this.commitIndex = commitIndex;
 
         if (this.commitIndex > this.lastApplied) {
             this.lastApplied = this.lastApplied + 1;
-            this.applyToStateMachine(this.getState().getLog().get(this.lastApplied).getCommand());
+            this.applyToStateMachine(this.getLog().getLastCommandAtIndex(this.lastApplied));
         }
     }
 
@@ -96,22 +114,6 @@ public class RaftNode {
         this.role = role;
     }
 
-    public int getCurrentTerm() {
-        return this.getState().getCurrentTerm();
-    }
-
-    public void setState(State state) {
-        this.state = state;
-        this.storageLayer.persistToDisk(this.state);
-    }
-
-    public State getState() {
-        return this.state;
-    }
-
-    public int getVotedFor() {
-        return this.getState().getVotedFor();
-    }
 
     public String getAddress() {
         return this.getConfig().getAddressFromId(this.getId());
@@ -121,8 +123,8 @@ public class RaftNode {
         RPCVoteRequestRequest request = new RPCVoteRequestRequest(
                 this.getCurrentTerm(),
                 this.getId(),
-                this.getState().getLastLogIndex(),
-                this.getState().getLastLogTerm()
+                this.getLog().getLastLogIndex(),
+                this.getLog().getLastLogTerm()
         );
         return this.getConfig()
                 .getNodeAddresses()
@@ -189,8 +191,7 @@ public class RaftNode {
     }
 
     public void appendEntryToLog(String command) {
-        int nextIndex = this.getState().getLog().size();
-        this.getState().getLog().add(new LogEntry(nextIndex, this.getCurrentTerm(), command));
+        this.getLog().appendEntry(this.getCurrentTerm(), command);
     }
 
     public void applyToStateMachine(String command) {

@@ -32,7 +32,7 @@ public class Leader extends Role {
         int numberOfNodes = node.getConfig().getNodeAddresses().size();
 
         this.nextIndex = Arrays.asList(new Integer[numberOfNodes]);
-        Arrays.fill(this.nextIndex.toArray(), node.getState().getLastLogIndex() + 1);
+        Arrays.fill(this.nextIndex.toArray(), node.getLog().getLastLogIndex() + 1);
 
         this.nextIndex = Arrays.asList(new Integer[numberOfNodes]);
         Arrays.fill(this.nextIndex.toArray(), 0);

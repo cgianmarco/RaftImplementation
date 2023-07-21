@@ -1,10 +1,8 @@
 package raft.roles;
 
 import raft.RaftNode;
-import raft.State;
 import raft.request.ClientRequest;
 import raft.request.RPCAppendEntriesRequest;
-import raft.request.RPCVoteRequestRequest;
 import raft.response.ClientRequestResponse;
 import raft.response.RPCAppendEntriesResponse;
 import raft.response.RPCVoteRequestResponse;
@@ -32,7 +30,8 @@ public class Candidate extends Role {
     }
 
     public void startElection(RaftNode node) {
-        node.setState(new State(node.getCurrentTerm() + 1, node.getId(), node.getState().getLog()));
+        node.setCurrentTerm(node.getCurrentTerm() + 1);
+        node.setVotedFor(node.getId());
         this.resetElectionTimer(node);
         List<RPCVoteRequestResponse> responses = node
                 .sendRPCVoteRequests();
@@ -62,7 +61,8 @@ public class Candidate extends Role {
 
         int term = request.getTerm();
         if (term >= node.getCurrentTerm()) {
-            node.setState(new State(term, request.getLeaderId(), node.getState().getLog()));
+            node.setCurrentTerm(term);
+            node.setVotedFor(request.getLeaderId());
             node.setRole(new Follower(node));
         }
 

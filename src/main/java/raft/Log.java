@@ -1,54 +1,34 @@
 package raft;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class State {
+public class Log {
+    List<LogEntry> entries;
 
-    int currentTerm;
-    int votedFor;
-
-    List<LogEntry> log;
-
-    public State(int currentTerm, int votedFor, List<LogEntry> log){
-        this.currentTerm = currentTerm;
-        this.votedFor = votedFor;
-        this.log = log;
-    }
-
-    public int getCurrentTerm() {
-        return currentTerm;
-    }
-
-    public int getVotedFor() {
-        return votedFor;
-    }
-
-    public List<LogEntry> getLog() {
-        return log;
+    public Log(){
+        this.entries = new ArrayList<>();
     }
 
     public int getLastLogIndex(){
-        if(this.getLog().isEmpty()){
+        if(this.entries.isEmpty()){
             return 0;
         }
 
-        return this.getLog().size() - 1;
+        return this.entries.size() - 1;
     }
     public int getLastLogTerm(){
-        if(this.getLog().isEmpty()){
+        if(this.entries.isEmpty()){
             return 0;
         }
 
-        return this.getLog().get(this.getLog().size() - 1).getTerm();
+        return this.entries.get(this.entries.size() - 1).getTerm();
     }
 
     public List<LogEntry> getEntriesStartingFromIndex(int index){
-        int logSize = this.getLog().size();
+        int logSize = this.entries.size();
         if(index >= logSize || index < 0) return List.of();
-        return this.getLog().subList(index, logSize);
+        return this.entries.subList(index, logSize);
     }
 
     public boolean hasLogAtLeastAsUpToDate(int otherLastLogIndex, int otherLastLogTerm){
@@ -71,7 +51,7 @@ public class State {
 
     public void resolveConflictsWithNewEntries(List<LogEntry> newEntries){
         List<Integer> conflictingIndexes = new ArrayList<>();
-        for(LogEntry oldEntry : this.getLog()){
+        for(LogEntry oldEntry : this.entries){
             for(LogEntry newEntry : newEntries){
                 if(oldEntry.conflictsWith(newEntry)){
                     conflictingIndexes.add(oldEntry.getIndex());
@@ -85,14 +65,32 @@ public class State {
             return;
         }
 
-        this.log = this.log.subList(0, minIndex);
+        this.entries = this.entries.subList(0, minIndex);
     }
 
     public void appendEntries(List<LogEntry> newEntries){
         for(LogEntry newEntry : newEntries){
-            if(!this.getLog().contains(newEntry)){
-                this.getLog().add(newEntry);
+            if(!this.entries.contains(newEntry)){
+                this.entries.add(newEntry);
             }
         }
     }
+
+    public void appendEntry(int term, String command){
+        int nextIndex = this.getSize();
+        this.entries.add(new LogEntry(nextIndex, term, command));
+    }
+
+    public String getLastCommandAtIndex(int index){
+        return this.entries.get(index).getCommand();
+    }
+
+    public LogEntry getEntryByIndex(int index){
+        return this.entries.get(index);
+    }
+
+    public int getSize(){
+        return this.entries.size();
+    }
+
 }
