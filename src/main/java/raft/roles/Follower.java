@@ -1,6 +1,8 @@
 package raft.roles;
 
 import raft.RaftNode;
+import raft.request.ClientRequest;
+import raft.response.ClientRequestResponse;
 import raft.tasks.ElectionTask;
 
 import java.util.Timer;
@@ -33,6 +35,11 @@ public class Follower extends Role {
         node.setRole(candidate);
         candidate.startElection(node);
 
+    }
+
+    @Override
+    public ClientRequestResponse handleClientRequest(RaftNode node, ClientRequest request) {
+        return null;
     }
 
 }

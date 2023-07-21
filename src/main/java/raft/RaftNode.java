@@ -1,14 +1,17 @@
 package raft;
 
 import raft.communication.CommunicationLayer;
+import raft.request.ClientRequest;
 import raft.request.RPCAppendEntriesRequest;
 import raft.request.RPCVoteRequestRequest;
+import raft.response.ClientRequestResponse;
 import raft.response.RPCAppendEntriesResponse;
 import raft.response.RPCVoteRequestResponse;
 import raft.roles.Follower;
 import raft.roles.Role;
 import raft.storage.StorageLayer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -19,6 +22,8 @@ public class RaftNode {
     RaftNetworkConfig config;
     State state;
     int id;
+    int commitIndex;
+    int lastApplied;
     Role role;
 
     Integer electionInterval;
@@ -28,6 +33,8 @@ public class RaftNode {
         this.config = config;
         this.id = id;
         this.electionInterval = null;
+        this.commitIndex = 0;
+        this.lastApplied = 0;
 
         this.start();
     }
@@ -46,7 +53,7 @@ public class RaftNode {
     public void start(){
         State state = this.storageLayer
                 .recoverFromDisk()
-                .orElse(new State(0, -1));
+                .orElse(new State(0, -1, new ArrayList<>()));
         this.setState(state);
 
         this.role = new Follower(this);
@@ -57,12 +64,19 @@ public class RaftNode {
     }
 
 
+    public int getCommitIndex() {
+        return commitIndex;
+    }
 
-
+    public int getLastApplied() {
+        return lastApplied;
+    }
 
     public RaftNetworkConfig getConfig() {
         return this.config;
     }
+
+
 
     public int getId() {
         return this.id;
@@ -78,6 +92,7 @@ public class RaftNode {
 
     public void setState(State state){
         this.state = state;
+        this.storageLayer.persistToDisk(this.state);
     }
 
     public State getState(){
@@ -133,5 +148,13 @@ public class RaftNode {
     }
     public RPCAppendEntriesResponse handleAppendEntriesRequest(RPCAppendEntriesRequest request){
         return this.role.handleRPCAppendEntriesRequest(this, request);
+    }
+
+    public ClientRequestResponse handleClientRequest(ClientRequest request){
+        this.role.handleClientRequest(this, request);
+    }
+
+    public void appendEntryToLog(LogEntry logEntry) {
+        this.getState().getLog().add(logEntry);
     }
 }

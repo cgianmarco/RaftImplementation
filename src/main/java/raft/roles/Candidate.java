@@ -2,8 +2,10 @@ package raft.roles;
 
 import raft.RaftNode;
 import raft.State;
+import raft.request.ClientRequest;
 import raft.request.RPCAppendEntriesRequest;
 import raft.request.RPCVoteRequestRequest;
+import raft.response.ClientRequestResponse;
 import raft.response.RPCAppendEntriesResponse;
 import raft.response.RPCVoteRequestResponse;
 import raft.tasks.ElectionTask;
@@ -49,6 +51,11 @@ public class Candidate extends Role {
         if (hasReceivedMajority) {
             this.transitionToLeader(node);
         }
+    }
+
+    @Override
+    public ClientRequestResponse handleClientRequest(RaftNode node, ClientRequest request) {
+        return null;
     }
 
     public RPCAppendEntriesResponse handleRPCAppendEntriesRequest(RaftNode node, RPCAppendEntriesRequest request) {

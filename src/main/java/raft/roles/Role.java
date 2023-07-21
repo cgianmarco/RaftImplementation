@@ -1,10 +1,13 @@
 package raft.roles;
 
+import raft.LogEntry;
 import raft.RaftNode;
 import raft.State;
+import raft.request.ClientRequest;
 import raft.request.RPCAppendEntriesRequest;
 import raft.request.RPCRequest;
 import raft.request.RPCVoteRequestRequest;
+import raft.response.ClientRequestResponse;
 import raft.response.RPCAppendEntriesResponse;
 import raft.response.RPCResponse;
 import raft.response.RPCVoteRequestResponse;
@@ -25,6 +28,8 @@ public abstract class Role {
         }
 
     }
+
+    public abstract ClientRequestResponse handleClientRequest(RaftNode node, ClientRequest request);
 
     public void handleRPCVoteRequestResponse(RaftNode node, RPCVoteRequestResponse response) {
         this.handleRPCResponse(node, response);
@@ -60,9 +65,31 @@ public abstract class Role {
             this.transitionToFollower(node);
         }
 
+        // Reply false if term < currentTerm
         if (term < node.getCurrentTerm()) {
             return new RPCAppendEntriesResponse(node.getCurrentTerm(), false);
         }
+
+        // Reply false if log doesn't contain an entry at prevLogIndex whose term matches prevLogTerm
+        try{
+            LogEntry logEntry = node.getState().getLog().get(request.getPrevLogIndex());
+            if(logEntry.getTerm() != request.getPrevLogTerm()){
+                return new RPCAppendEntriesResponse(node.getCurrentTerm(), false);
+            }
+        }catch(IndexOutOfBoundsException e){
+            return new RPCAppendEntriesResponse(node.getCurrentTerm(), false);
+        }
+
+        // If an existing entry conflicts with a new one (same index but different terms)
+        // delete the existing entry and all that follow it
+        // TODO
+
+        // Append new entries not already in the log
+        // TODO
+
+        // If leaderCommit > commitIndex,
+        // set commitIndex = min(leaderCommit, index of last new entry)
+        // TODO
 
         //this.transitionToFollower(node); // I added this
         return new RPCAppendEntriesResponse(node.getCurrentTerm(), true);
