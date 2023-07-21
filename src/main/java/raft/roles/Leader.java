@@ -8,6 +8,7 @@ import raft.response.ClientRequestResponse;
 import raft.response.RPCAppendEntriesResponse;
 import raft.tasks.HeartbeatTask;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Timer;
@@ -20,8 +21,7 @@ public class Leader extends Role {
 
     public Leader(RaftNode node) {
         this.initializeLeaderState(node);
-        List<RPCAppendEntriesResponse> responses = node
-                .sendRPCAppendEntriesRequests(new RPCAppendEntriesRequest(node.getCurrentTerm(), node.getId()));
+        List<RPCAppendEntriesResponse> responses = node.sendRPCAppendEntriesRequests(new ArrayList<>());
         responses.forEach(response -> this.handleRPCAppendEntriesResponse(node, response));
         this.timer = new Timer();
         this.timer.scheduleAtFixedRate(new HeartbeatTask(this, node), 0, node.getHeartbeatInterval());
@@ -31,9 +31,8 @@ public class Leader extends Role {
 
         int numberOfNodes = node.getConfig().getNodeAddresses().size();
 
-        int initialValue = 0; // To be determined
         this.nextIndex = Arrays.asList(new Integer[numberOfNodes]);
-        Arrays.fill(this.nextIndex.toArray(), initialValue);
+        Arrays.fill(this.nextIndex.toArray(), node.getState().getLastLogIndex() + 1);
 
         this.nextIndex = Arrays.asList(new Integer[numberOfNodes]);
         Arrays.fill(this.nextIndex.toArray(), 0);
@@ -43,7 +42,7 @@ public class Leader extends Role {
     @Override
     public void onHeartbeatTimeoutElapsed(RaftNode node) {
         List<RPCAppendEntriesResponse> responses = node
-                .sendRPCAppendEntriesRequests(new RPCAppendEntriesRequest(node.getCurrentTerm(), node.getId()));
+                .sendRPCAppendEntriesRequests(new ArrayList<>());
         responses.forEach(response -> this.handleRPCAppendEntriesResponse(node, response));
     }
     public void transitionToLeader(RaftNode node){
@@ -62,8 +61,9 @@ public class Leader extends Role {
 
     @Override
     public ClientRequestResponse handleClientRequest(RaftNode node, ClientRequest request) {
-        node.appendEntryToLog(new LogEntry(node.getCurrentTerm(), request.getCommand()));
-        return null;
+        node.appendEntryToLog(request.getCommand());
+        node.applyToStateMachine(request.getCommand()); // Will return StateMachineResult
+        return new ClientRequestResponse(); // Will become ClientRequestResponse(result)
     }
 
 

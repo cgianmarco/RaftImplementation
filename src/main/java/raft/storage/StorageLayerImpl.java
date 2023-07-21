@@ -20,21 +20,21 @@ public class StorageLayerImpl implements StorageLayer{
     }
     @Override
     public void persistToDisk(State state) {
-        HTreeMap<String, Integer> keyValueMap = hashMapMaker.createOrOpen();
-        keyValueMap.put("votedFor", state.getVotedFor());
-        keyValueMap.put("currentTerm", state.getCurrentTerm());
-        keyValueMap.close();
+//        HTreeMap<String, Integer> keyValueMap = hashMapMaker.createOrOpen();
+//        keyValueMap.put("votedFor", state.getVotedFor());
+//        keyValueMap.put("currentTerm", state.getCurrentTerm());
+//        keyValueMap.close();
     }
 
     @Override
     public Optional<State> recoverFromDisk() {
-        HTreeMap<String, Integer> keyValueMap = hashMapMaker.createOrOpen();
-        Integer votedFor = keyValueMap.get("votedFor");
-        Integer currentTerm = keyValueMap.get("currentTerm");
-        keyValueMap.close();
-
-        if((votedFor != null) && (currentTerm != null))
-            return Optional.of(new State(currentTerm, votedFor));
+//        HTreeMap<String, Integer> keyValueMap = hashMapMaker.createOrOpen();
+//        Integer votedFor = keyValueMap.get("votedFor");
+//        Integer currentTerm = keyValueMap.get("currentTerm");
+//        keyValueMap.close();
+//
+//        if((votedFor != null) && (currentTerm != null))
+//            return Optional.of(new State(currentTerm, votedFor));
 
         return Optional.empty();
     }

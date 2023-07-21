@@ -12,6 +12,7 @@ import raft.roles.Role;
 import raft.storage.StorageLayer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -27,7 +28,8 @@ public class RaftNode {
     Role role;
 
     Integer electionInterval;
-    public RaftNode(int id, RaftNetworkConfig config, CommunicationLayer communicationLayer,StorageLayer storageLayer) {
+
+    public RaftNode(int id, RaftNetworkConfig config, CommunicationLayer communicationLayer, StorageLayer storageLayer) {
         this.communicationLayer = communicationLayer;
         this.storageLayer = storageLayer;
         this.config = config;
@@ -50,7 +52,7 @@ public class RaftNode {
 
     }
 
-    public void start(){
+    public void start() {
         State state = this.storageLayer
                 .recoverFromDisk()
                 .orElse(new State(0, -1, new ArrayList<>()));
@@ -59,8 +61,17 @@ public class RaftNode {
         this.role = new Follower(this);
     }
 
-    public void stop(){
+    public void stop() {
         // TODO
+    }
+
+    public void setCommitIndex(int commitIndex) {
+        this.commitIndex = commitIndex;
+
+        if (this.commitIndex > this.lastApplied) {
+            this.lastApplied = this.lastApplied + 1;
+            this.applyToStateMachine(this.getState().getLog().get(this.lastApplied).getCommand());
+        }
     }
 
 
@@ -77,7 +88,6 @@ public class RaftNode {
     }
 
 
-
     public int getId() {
         return this.id;
     }
@@ -90,23 +100,31 @@ public class RaftNode {
         return this.getState().getCurrentTerm();
     }
 
-    public void setState(State state){
+    public void setState(State state) {
         this.state = state;
         this.storageLayer.persistToDisk(this.state);
     }
 
-    public State getState(){
+    public State getState() {
         return this.state;
     }
 
     public int getVotedFor() {
         return this.getState().getVotedFor();
     }
-    public String getAddress(){
+
+    public String getAddress() {
         return this.getConfig().getNodeAddresses().get(this.getId());
     }
 
-    public List<RPCVoteRequestResponse> sendRPCVoteRequests(RPCVoteRequestRequest request) {
+    public List<RPCVoteRequestResponse> sendRPCVoteRequests() {
+        RPCVoteRequestRequest request = new RPCVoteRequestRequest(
+                this.getCurrentTerm(),
+                this.getId(),
+                this.getState().getLastLogIndex(),
+                this.getState().getLastLogTerm()
+
+        );
         return this.getConfig()
                 .getNodeAddresses()
                 .stream()
@@ -115,7 +133,15 @@ public class RaftNode {
                 .toList();
     }
 
-    public List<RPCAppendEntriesResponse> sendRPCAppendEntriesRequests(RPCAppendEntriesRequest request) {
+    public List<RPCAppendEntriesResponse> sendRPCAppendEntriesRequests(List<LogEntry> entries) {
+        RPCAppendEntriesRequest request = new RPCAppendEntriesRequest(
+                this.getCurrentTerm(),
+                this.getId(),
+                this.getPrevLogIndex(),
+                this.getPrevLogTerm(),
+                entries,
+                this.getCommitIndex()
+        );
         return this.getConfig()
                 .getNodeAddresses()
                 .stream()
@@ -123,12 +149,20 @@ public class RaftNode {
                 .map(address -> this.communicationLayer.sendRPCAppendEntriesRequest(request, address)).toList();
     }
 
+    private int getPrevLogIndex() {
+        return 0; //TODO
+    }
+    private int getPrevLogTerm() {
+        return 0;  //TODO
+    }
+
+
     public int getMajorityCount() {
         return this.getConfig().getMajority();
     }
 
     public int getElectionInterval() {
-        if(this.electionInterval == null){
+        if (this.electionInterval == null) {
             int min = 150;
             int max = 300;
             Random random = new Random();
@@ -143,18 +177,25 @@ public class RaftNode {
         return 20;
     }
 
-    public RPCVoteRequestResponse handleRPCVoteRequest(RPCVoteRequestRequest request){
+    public RPCVoteRequestResponse handleRPCVoteRequest(RPCVoteRequestRequest request) {
         return this.role.handleRPCVoteRequest(this, request);
     }
-    public RPCAppendEntriesResponse handleAppendEntriesRequest(RPCAppendEntriesRequest request){
+
+    public RPCAppendEntriesResponse handleAppendEntriesRequest(RPCAppendEntriesRequest request) {
         return this.role.handleRPCAppendEntriesRequest(this, request);
     }
 
-    public ClientRequestResponse handleClientRequest(ClientRequest request){
-        this.role.handleClientRequest(this, request);
+    public ClientRequestResponse handleClientRequest(ClientRequest request) {
+        return this.role.handleClientRequest(this, request);
     }
 
-    public void appendEntryToLog(LogEntry logEntry) {
-        this.getState().getLog().add(logEntry);
+    public void appendEntryToLog(String command) {
+        int nextIndex = this.getState().getLog().size();
+        this.getState().getLog().add(new LogEntry(nextIndex, this.getCurrentTerm(), command));
     }
+
+    public void applyToStateMachine(String command) {
+        // TODO
+    }
+
 }

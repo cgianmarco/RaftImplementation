@@ -32,10 +32,10 @@ public class Candidate extends Role {
     }
 
     public void startElection(RaftNode node) {
-        node.setState(new State(node.getCurrentTerm() + 1, node.getId()));
+        node.setState(new State(node.getCurrentTerm() + 1, node.getId(), node.getState().getLog()));
         this.resetElectionTimer(node);
         List<RPCVoteRequestResponse> responses = node
-                .sendRPCVoteRequests(new RPCVoteRequestRequest(node.getCurrentTerm(), node.getId()));
+                .sendRPCVoteRequests();
 
         responses.forEach(response -> this.handleRPCVoteRequestResponse(node, response));
 
@@ -62,7 +62,7 @@ public class Candidate extends Role {
 
         int term = request.getTerm();
         if (term >= node.getCurrentTerm()) {
-            node.setState(new State(term, request.getLeaderId()));
+            node.setState(new State(term, request.getLeaderId(), node.getState().getLog()));
             node.setRole(new Follower(node));
         }
 

@@ -19,10 +19,10 @@ public abstract class Role {
     }
 
     public void handleRPCResponse(RaftNode node, RPCResponse response) {
-        if(response != null){
+        if (response != null) {
             int term = response.getTerm();
             if (term > node.getCurrentTerm()) {
-                node.setState(new State(term, -1));
+                node.setState(new State(term, -1, node.getState().getLog()));
                 this.transitionToFollower(node);
             }
         }
@@ -42,7 +42,11 @@ public abstract class Role {
     public RPCVoteRequestResponse handleRPCVoteRequest(RaftNode node, RPCVoteRequestRequest request) {
         int term = request.getTerm();
         if (term > node.getCurrentTerm()) {
-            node.setState(new State(term, request.getCandidateId()));
+            node.setState(new State(
+                    term,
+                    request.getCandidateId(),
+                    node.getState().getLog()
+            ));
             this.transitionToFollower(node);
         }
 
@@ -50,8 +54,14 @@ public abstract class Role {
             return new RPCVoteRequestResponse(node.getCurrentTerm(), false);
         }
 
-        if (node.getVotedFor() == -1 || node.getVotedFor() == request.getCandidateId()) {
-            node.setState(new State(term, request.getCandidateId()));
+        if ((node.getVotedFor() == -1 || node.getVotedFor() == request.getCandidateId()) &&
+                node.getState().hasLogAtLeastAsUpToDate(request.getLastLogIndex(), request.getLastLogTerm())) {
+
+            node.setState(new State(
+                    term,
+                    request.getCandidateId(),
+                    node.getState().getLog()
+            ));
             return new RPCVoteRequestResponse(node.getCurrentTerm(), true);
         }
 
@@ -61,7 +71,7 @@ public abstract class Role {
     public RPCAppendEntriesResponse handleRPCAppendEntriesRequest(RaftNode node, RPCAppendEntriesRequest request) {
         int term = request.getTerm();
         if (term >= node.getCurrentTerm()) {
-            node.setState(new State(term, request.getLeaderId()));
+            node.setState(new State(term, request.getLeaderId(), node.getState().getLog()));
             this.transitionToFollower(node);
         }
 
@@ -71,25 +81,28 @@ public abstract class Role {
         }
 
         // Reply false if log doesn't contain an entry at prevLogIndex whose term matches prevLogTerm
-        try{
+        try {
             LogEntry logEntry = node.getState().getLog().get(request.getPrevLogIndex());
-            if(logEntry.getTerm() != request.getPrevLogTerm()){
+            if (logEntry.getTerm() != request.getPrevLogTerm()) {
                 return new RPCAppendEntriesResponse(node.getCurrentTerm(), false);
             }
-        }catch(IndexOutOfBoundsException e){
+        } catch (IndexOutOfBoundsException e) {
             return new RPCAppendEntriesResponse(node.getCurrentTerm(), false);
         }
 
         // If an existing entry conflicts with a new one (same index but different terms)
         // delete the existing entry and all that follow it
-        // TODO
+        node.getState().resolveConflictsWithNewEntries(request.getEntries());
 
         // Append new entries not already in the log
-        // TODO
+        node.getState().appendEntries(request.getEntries());
 
         // If leaderCommit > commitIndex,
         // set commitIndex = min(leaderCommit, index of last new entry)
-        // TODO
+        int leaderCommit = request.getLeaderCommit();
+        if(leaderCommit > node.getCommitIndex()){
+            node.setCommitIndex(Math.min(leaderCommit, request.getEntries().stream().mapToInt(entry -> entry.getIndex()).max().orElse(Integer.MAX_VALUE) ));
+        }
 
         //this.transitionToFollower(node); // I added this
         return new RPCAppendEntriesResponse(node.getCurrentTerm(), true);
