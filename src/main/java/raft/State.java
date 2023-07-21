@@ -45,6 +45,12 @@ public class State {
         return this.getLog().get(this.getLog().size() - 1).getTerm();
     }
 
+    public List<LogEntry> getEntriesStartingFromIndex(int index){
+        int logSize = this.getLog().size();
+        if(index >= logSize || index < 0) return List.of();
+        return this.getLog().subList(index, logSize);
+    }
+
     public boolean hasLogAtLeastAsUpToDate(int otherLastLogIndex, int otherLastLogTerm){
         int thisLastLogIndex = this.getLastLogIndex();
         int thisLastLogTerm = this.getLastLogTerm();

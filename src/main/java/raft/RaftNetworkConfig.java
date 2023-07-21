@@ -16,6 +16,10 @@ public class RaftNetworkConfig {
         return this.majority;
     }
 
+    public String getAddressFromId(int id){
+        return this.getNodeAddresses().get(id);
+    }
+
     public List<String> getNodeAddresses() {
         return this.nodes;
     }

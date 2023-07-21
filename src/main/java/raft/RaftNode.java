@@ -114,7 +114,7 @@ public class RaftNode {
     }
 
     public String getAddress() {
-        return this.getConfig().getNodeAddresses().get(this.getId());
+        return this.getConfig().getAddressFromId(this.getId());
     }
 
     public List<RPCVoteRequestResponse> sendRPCVoteRequests() {
@@ -123,7 +123,6 @@ public class RaftNode {
                 this.getId(),
                 this.getState().getLastLogIndex(),
                 this.getState().getLastLogTerm()
-
         );
         return this.getConfig()
                 .getNodeAddresses()

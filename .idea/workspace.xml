@@ -6,13 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="3cdaa32e-4803-4324-b5b7-79c0349d0c78" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/raft/LogEntry.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/LogEntry.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/RaftNetworkConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/RaftNetworkConfig.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/raft/RaftNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/RaftNode.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/raft/State.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/State.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/raft/roles/Candidate.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/roles/Candidate.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/raft/roles/Leader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/roles/Leader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/raft/roles/Role.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/roles/Role.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/raft/storage/StorageLayerImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/storage/StorageLayerImpl.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -130,9 +126,9 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.raft.MainServer1" />
         <item itemvalue="Application.MainServer3" />
         <item itemvalue="Application.raft.MainServer2" />
+        <item itemvalue="Application.raft.MainServer1" />
         <item itemvalue="Application.MainServer2" />
         <item itemvalue="Application.MainServer1" />
       </list>
