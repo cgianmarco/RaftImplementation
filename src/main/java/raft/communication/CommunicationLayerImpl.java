@@ -7,8 +7,8 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import raft.request.RPCAppendEntriesRequest;
-import raft.response.RPCAppendEntriesResponse;
 import raft.request.RPCVoteRequestRequest;
+import raft.response.RPCAppendEntriesResponse;
 import raft.response.RPCVoteRequestResponse;
 
 import java.io.InputStream;

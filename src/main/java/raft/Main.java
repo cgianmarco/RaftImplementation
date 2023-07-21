@@ -1,8 +1,5 @@
 package raft;
 
-import java.io.*;
-import java.net.InetSocketAddress;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
@@ -14,6 +11,12 @@ import raft.response.RPCAppendEntriesResponse;
 import raft.response.RPCVoteRequestResponse;
 import raft.storage.StorageLayer;
 import raft.storage.StorageLayerImpl;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
 
 
 public class Main {

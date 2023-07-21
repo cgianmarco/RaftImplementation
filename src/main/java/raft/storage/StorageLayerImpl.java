@@ -1,10 +1,10 @@
 package raft.storage;
 
-import raft.State;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.HTreeMap;
 import org.mapdb.Serializer;
+import raft.State;
 
 import java.io.File;
 import java.util.Optional;

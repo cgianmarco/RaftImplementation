@@ -1,8 +1,8 @@
 package raft.communication;
 
 import raft.request.RPCAppendEntriesRequest;
-import raft.response.RPCAppendEntriesResponse;
 import raft.request.RPCVoteRequestRequest;
+import raft.response.RPCAppendEntriesResponse;
 import raft.response.RPCVoteRequestResponse;
 
 public interface CommunicationLayer {

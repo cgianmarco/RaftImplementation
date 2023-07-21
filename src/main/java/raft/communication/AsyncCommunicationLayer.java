@@ -3,8 +3,8 @@ package raft.communication;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.asynchttpclient.*;
 import raft.request.RPCAppendEntriesRequest;
-import raft.response.RPCAppendEntriesResponse;
 import raft.request.RPCVoteRequestRequest;
+import raft.response.RPCAppendEntriesResponse;
 import raft.response.RPCVoteRequestResponse;
 
 public class AsyncCommunicationLayer implements CommunicationLayer {

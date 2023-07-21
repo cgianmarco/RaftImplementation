@@ -1,6 +1,5 @@
 package raft.roles;
 
-import org.example.*;
 import raft.RaftNode;
 import raft.State;
 import raft.request.RPCAppendEntriesRequest;

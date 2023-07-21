@@ -1,8 +1,8 @@
 package raft.roles;
 
+import raft.RaftNode;
 import raft.request.RPCAppendEntriesRequest;
 import raft.response.RPCAppendEntriesResponse;
-import raft.RaftNode;
 import raft.tasks.HeartbeatTask;
 
 import java.util.List;
