@@ -16,6 +16,10 @@ public class RPCAppendEntriesRequest extends RPCRequest {
     public RPCAppendEntriesRequest(int term, int leaderId, int prevLogIndex, int prevLogTerm, List<LogEntry> entries, int leaderCommit) {
         super(term);
         this.leaderId = leaderId;
+        this.prevLogIndex = prevLogIndex;
+        this.prevLogTerm = prevLogTerm;
+        this.entries = entries;
+        this.leaderCommit = leaderCommit;
     }
 
     public int getLeaderId() {

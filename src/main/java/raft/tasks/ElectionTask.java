@@ -7,15 +7,13 @@ import java.util.TimerTask;
 
 public class ElectionTask extends TimerTask {
     private Role role;
-    private RaftNode node;
 
-    public ElectionTask(Role role, RaftNode node) {
+    public ElectionTask(Role role) {
         this.role = role;
-        this.node = node;
     }
 
     @Override
     public void run() {
-        this.role.onElectionTimeoutElapsed(node);
+        this.role.onElectionTimeoutElapsed();
     }
 }

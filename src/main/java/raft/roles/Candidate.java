@@ -17,26 +17,27 @@ public class Candidate extends Role {
     Timer timer;
 
     public Candidate(RaftNode node) {
+        super(node);
         this.timer = new Timer();
     }
 
     @Override
-    public void onElectionTimeoutElapsed(RaftNode node) {
-        this.startElection(node);
+    public void onElectionTimeoutElapsed() {
+        this.startElection();
     }
 
-    public void resetElectionTimer(RaftNode node) {
-        this.timer.schedule(new ElectionTask(this, node), node.getElectionInterval());
+    public void resetElectionTimer() {
+        this.timer.schedule(new ElectionTask(this), node.getElectionInterval());
     }
 
-    public void startElection(RaftNode node) {
+    public void startElection() {
         node.setCurrentTerm(node.getCurrentTerm() + 1);
         node.setVotedFor(node.getId());
-        this.resetElectionTimer(node);
+        this.resetElectionTimer();
         List<RPCVoteRequestResponse> responses = node
                 .sendRPCVoteRequests();
 
-        responses.forEach(response -> this.handleRPCVoteRequestResponse(node, response));
+        responses.forEach(response -> this.handleRPCVoteRequestResponse(response));
 
         int voteCount = responses.stream()
                 .filter(Objects::nonNull)
@@ -48,16 +49,16 @@ public class Candidate extends Role {
         boolean hasReceivedMajority = voteCount >= node.getMajorityCount();
 
         if (hasReceivedMajority) {
-            this.transitionToLeader(node);
+            this.transitionToLeader();
         }
     }
 
     @Override
-    public ClientRequestResponse handleClientRequest(RaftNode node, ClientRequest request) {
+    public ClientRequestResponse handleClientRequest(ClientRequest request) {
         return null;
     }
 
-    public RPCAppendEntriesResponse handleRPCAppendEntriesRequest(RaftNode node, RPCAppendEntriesRequest request) {
+    public RPCAppendEntriesResponse handleRPCAppendEntriesRequest(RPCAppendEntriesRequest request) {
 
         int term = request.getTerm();
         if (term >= node.getCurrentTerm()) {
@@ -66,19 +67,19 @@ public class Candidate extends Role {
             node.setRole(new Follower(node));
         }
 
-        return super.handleRPCAppendEntriesRequest(node, request);
+        return super.handleRPCAppendEntriesRequest(request);
 
     }
 
 
-    public void transitionToLeader(RaftNode node){
+    public void transitionToLeader(){
         this.timer.cancel();
         System.out.println("Node " + node.getId() + " passing from " + this.getClass().getSimpleName() + " to Leader");
         Leader leader = new Leader(node);
         node.setRole(leader);
     }
 
-    public void transitionToFollower(RaftNode node){
+    public void transitionToFollower(){
         this.timer.cancel();
         System.out.println("Node " + node.getId() + " passing from " + this.getClass().getSimpleName() + " to Follower");
         Follower follower = new Follower(node);

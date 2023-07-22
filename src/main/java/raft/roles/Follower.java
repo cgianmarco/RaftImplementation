@@ -12,33 +12,34 @@ public class Follower extends Role {
     Timer timer;
 
     public Follower(RaftNode node) {
+        super(node);
         this.timer = new Timer();
-        this.timer.schedule(new ElectionTask(this, node), node.getElectionInterval());
+        this.timer.schedule(new ElectionTask(this), node.getElectionInterval());
     }
 
     @Override
-    public void onElectionTimeoutElapsed(RaftNode node) {
+    public void onElectionTimeoutElapsed() {
         System.out.println("elapsed timeout follower for node " + node.getId());
-        this.transitionToCandidate(node);
+        this.transitionToCandidate();
     }
 
-    public void transitionToFollower(RaftNode node){
+    public void transitionToFollower(){
         this.timer.cancel();
         // System.out.println("Node " + node.getId() + " passing from " + this.getClass().toString() + " to Follower");
         node.setRole(new Follower(node));
     }
 
-    public void transitionToCandidate(RaftNode node){
+    public void transitionToCandidate(){
         this.timer.cancel();
         System.out.println("Node " + node.getId() + " passing from " + this.getClass().getSimpleName() + " to Candidate");
         Candidate candidate = new Candidate(node);
         node.setRole(candidate);
-        candidate.startElection(node);
+        candidate.startElection();
 
     }
 
     @Override
-    public ClientRequestResponse handleClientRequest(RaftNode node, ClientRequest request) {
+    public ClientRequestResponse handleClientRequest(ClientRequest request) {
         return null;
     }
 

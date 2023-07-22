@@ -11,40 +11,48 @@ import raft.response.RPCAppendEntriesResponse;
 import raft.response.RPCResponse;
 import raft.response.RPCVoteRequestResponse;
 
+import java.util.Collections;
+
 public abstract class Role {
 
-    public void handleRPCRequest(RaftNode node, RPCRequest request) {
+    RaftNode node;
+
+    public Role(RaftNode node){
+        this.node = node;
+    }
+
+    public void handleRPCRequest(RPCRequest request) {
 
     }
 
-    public void handleRPCResponse(RaftNode node, RPCResponse response) {
+    public void handleRPCResponse(RPCResponse response) {
         if (response != null) {
             int term = response.getTerm();
             if (term > node.getCurrentTerm()) {
                 node.setCurrentTerm(term);
                 node.setVotedFor(-1);
-                this.transitionToFollower(node);
+                this.transitionToFollower();
             }
         }
 
     }
 
-    public abstract ClientRequestResponse handleClientRequest(RaftNode node, ClientRequest request);
+    public abstract ClientRequestResponse handleClientRequest(ClientRequest request);
 
-    public void handleRPCVoteRequestResponse(RaftNode node, RPCVoteRequestResponse response) {
-        this.handleRPCResponse(node, response);
+    public void handleRPCVoteRequestResponse(RPCVoteRequestResponse response) {
+        this.handleRPCResponse(response);
     }
 
-    public void handleRPCAppendEntriesResponse(RaftNode node, RPCAppendEntriesResponse response) {
-        this.handleRPCResponse(node, response);
+    public void handleRPCAppendEntriesResponse(RPCAppendEntriesResponse response) {
+        this.handleRPCResponse(response);
     }
 
-    public RPCVoteRequestResponse handleRPCVoteRequest(RaftNode node, RPCVoteRequestRequest request) {
+    public RPCVoteRequestResponse handleRPCVoteRequest(RPCVoteRequestRequest request) {
         int term = request.getTerm();
         if (term > node.getCurrentTerm()) {
             node.setCurrentTerm(term);
             node.setVotedFor(request.getCandidateId());
-            this.transitionToFollower(node);
+            this.transitionToFollower();
         }
 
         if (term < node.getCurrentTerm()) {
@@ -52,7 +60,7 @@ public abstract class Role {
         }
 
         if ((node.getVotedFor() == -1 || node.getVotedFor() == request.getCandidateId()) &&
-                node.getLog().hasLogAtLeastAsUpToDate(request.getLastLogIndex(), request.getLastLogTerm())) {
+                node.getLog().isAtLeastAsUpToDate(request.getLastLogIndex(), request.getLastLogTerm())) {
 
             node.setCurrentTerm(term);
             node.setVotedFor(request.getCandidateId());
@@ -62,12 +70,12 @@ public abstract class Role {
         return new RPCVoteRequestResponse(node.getCurrentTerm(), false);
     }
 
-    public RPCAppendEntriesResponse handleRPCAppendEntriesRequest(RaftNode node, RPCAppendEntriesRequest request) {
+    public RPCAppendEntriesResponse handleRPCAppendEntriesRequest(RPCAppendEntriesRequest request) {
         int term = request.getTerm();
         if (term >= node.getCurrentTerm()) {
             node.setCurrentTerm(term);
             node.setVotedFor(request.getLeaderId());
-            this.transitionToFollower(node);
+            this.transitionToFollower();
         }
 
         // Reply false if term < currentTerm
@@ -76,40 +84,23 @@ public abstract class Role {
         }
 
         // Reply false if log doesn't contain an entry at prevLogIndex whose term matches prevLogTerm
-        try {
-            LogEntry logEntry = node.getLog().getEntryByIndex(request.getPrevLogIndex());
-            if (logEntry.getTerm() != request.getPrevLogTerm()) {
-                return new RPCAppendEntriesResponse(node.getCurrentTerm(), false);
-            }
-        } catch (IndexOutOfBoundsException e) {
+        if(!node.getLog().checkConsistency(request.getPrevLogIndex(), request.getPrevLogTerm())){
             return new RPCAppendEntriesResponse(node.getCurrentTerm(), false);
         }
 
-        // If an existing entry conflicts with a new one (same index but different terms)
-        // delete the existing entry and all that follow it
-        node.getLog().resolveConflictsWithNewEntries(request.getEntries());
+        node.getLog().addNonConflictingEntries(request.getEntries());
+        node.getLog().commitEntriesUpTo(request.getLeaderCommit());
 
-        // Append new entries not already in the log
-        node.getLog().appendEntries(request.getEntries());
-
-        // If leaderCommit > commitIndex,
-        // set commitIndex = min(leaderCommit, index of last new entry)
-        int leaderCommit = request.getLeaderCommit();
-        if(leaderCommit > node.getCommitIndex()){
-            node.setCommitIndex(Math.min(leaderCommit, request.getEntries().stream().mapToInt(entry -> entry.getIndex()).max().orElse(Integer.MAX_VALUE)));
-        }
-
-        //this.transitionToFollower(node); // I added this
         return new RPCAppendEntriesResponse(node.getCurrentTerm(), true);
     }
 
-    public abstract void transitionToFollower(RaftNode node);
+    public abstract void transitionToFollower();
 
 
-    public void onElectionTimeoutElapsed(RaftNode node) {
+    public void onElectionTimeoutElapsed() {
     }
 
-    public void onHeartbeatTimeoutElapsed(RaftNode node) {
+    public void onHeartbeatTimeoutElapsed() {
 
     }
 

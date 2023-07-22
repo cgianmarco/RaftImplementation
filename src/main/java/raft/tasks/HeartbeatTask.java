@@ -7,15 +7,13 @@ import java.util.TimerTask;
 
 public class HeartbeatTask extends TimerTask {
     private Role role;
-    private RaftNode node;
 
-    public HeartbeatTask(Role role, RaftNode node) {
+    public HeartbeatTask(Role role) {
         this.role = role;
-        this.node = node;
     }
 
     @Override
     public void run() {
-        this.role.onHeartbeatTimeoutElapsed(node);
+        this.role.onHeartbeatTimeoutElapsed();
     }
 }

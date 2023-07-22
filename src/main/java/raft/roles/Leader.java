@@ -1,5 +1,6 @@
 package raft.roles;
 
+import raft.Log;
 import raft.LogEntry;
 import raft.RaftNode;
 import raft.request.ClientRequest;
@@ -12,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Timer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class Leader extends Role {
 
@@ -20,50 +23,88 @@ public class Leader extends Role {
     List<Integer>  matchIndex;
 
     public Leader(RaftNode node) {
-        this.initializeLeaderState(node);
+        super(node);
+        this.initializeLeaderState();
         List<RPCAppendEntriesResponse> responses = node.sendRPCAppendEntriesRequests(new ArrayList<>());
-        responses.forEach(response -> this.handleRPCAppendEntriesResponse(node, response));
+        responses.forEach(response -> this.handleRPCAppendEntriesResponse(response));
         this.timer = new Timer();
-        this.timer.scheduleAtFixedRate(new HeartbeatTask(this, node), 0, node.getHeartbeatInterval());
+        this.timer.scheduleAtFixedRate(new HeartbeatTask(this), 0, node.getHeartbeatInterval());
     }
 
-    void initializeLeaderState(RaftNode node){
+    void initializeLeaderState(){
 
         int numberOfNodes = node.getConfig().getNodeAddresses().size();
 
         this.nextIndex = Arrays.asList(new Integer[numberOfNodes]);
-        Arrays.fill(this.nextIndex.toArray(), node.getLog().getLastLogIndex() + 1);
+        for(int i = 0; i < this.nextIndex.size(); i++){
+            this.nextIndex.set(i, node.getLog().getLastLogIndex() + 1);
+        }
 
-        this.nextIndex = Arrays.asList(new Integer[numberOfNodes]);
-        Arrays.fill(this.nextIndex.toArray(), 0);
+        this.matchIndex = Arrays.asList(new Integer[numberOfNodes]);
+        for(int i = 0; i < this.matchIndex.size(); i++){
+            this.matchIndex.set(i, 0);
+        }
 
     }
 
     @Override
-    public void onHeartbeatTimeoutElapsed(RaftNode node) {
+    public void onHeartbeatTimeoutElapsed() {
         List<RPCAppendEntriesResponse> responses = node
                 .sendRPCAppendEntriesRequests(new ArrayList<>());
-        responses.forEach(response -> this.handleRPCAppendEntriesResponse(node, response));
+        responses.forEach(response -> this.handleRPCAppendEntriesResponse(response));
     }
-    public void transitionToLeader(RaftNode node){
+    public void transitionToLeader(){
         this.timer.cancel();
         // System.out.println("Node " + node.getId() + " passing from " + this.getClass().toString() + " to Follower");
         node.setRole(new Leader(node));
     }
 
 
-    public void transitionToFollower(RaftNode node){
+    public void transitionToFollower(){
         this.timer.cancel();
         System.out.println("Node " + node.getId() + " passing from " + this.getClass().getSimpleName() + " to Follower");
         Follower follower = new Follower(node);
         node.setRole(follower);
     }
 
+    void updateNextIndex(List<LogEntry> newEntries, int nodeId){
+        this.nextIndex.set(nodeId, Log.getLastIndexOfEntries(newEntries) + 1);
+    }
+    private void updateMatchIndex(List<LogEntry> newEntries, int nodeId) {
+        this.matchIndex.set(nodeId, Log.getLastIndexOfEntries(newEntries));
+    }
+    private void decrementNextIndex(int nodeId) {
+        this.nextIndex.set(nodeId, this.nextIndex.get(nodeId) - 1);
+    }
+
+
+    public void sendRequest(int nodeId) {
+        //while (this.nextIndex.get(nodeId) >= 0) {
+            List<LogEntry> newEntries = node.getLog().getEntriesStartingFromIndex(nextIndex.get(nodeId));
+
+            RPCAppendEntriesResponse response = node.sendRPCAppendEntriesRequest(newEntries, nodeId);
+
+
+            if (response != null && response.isSuccess()) {
+                this.updateNextIndex(newEntries, nodeId);
+                this.updateMatchIndex(newEntries, nodeId);
+                //break;
+            }
+//            else {
+//                if (this.nextIndex.get(nodeId) == 0) {
+//                    //break;
+//                }
+//                this.decrementNextIndex(nodeId);
+//            }
+        }
+    // }
+
     @Override
-    public ClientRequestResponse handleClientRequest(RaftNode node, ClientRequest request) {
+    public ClientRequestResponse handleClientRequest(ClientRequest request) {
         node.appendEntryToLog(request.getCommand());
-        node.applyToStateMachine(request.getCommand()); // Will return StateMachineResult
-        return new ClientRequestResponse(); // Will become ClientRequestResponse(result)
+        nextIndex.forEach(nextIndexForId -> System.out.println(nextIndexForId));
+        node.forAllOtherNodes(nodeId -> sendRequest(nodeId));
+        return new ClientRequestResponse(true); // Will become ClientRequestResponse(result)
     }
 
 

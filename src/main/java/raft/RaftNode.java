@@ -15,42 +15,38 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 public class RaftNode {
 
     CommunicationLayer communicationLayer;
     StorageLayer storageLayer;
     RaftNetworkConfig config;
+    ExecutorService executorService;
     int currentTerm;
     int votedFor;
     Log log;
     int id;
-    int commitIndex;
-    int lastApplied;
+
     private Role role;
 
     Integer electionInterval;
 
     public RaftNode(int id, RaftNetworkConfig config, CommunicationLayer communicationLayer, StorageLayer storageLayer) {
-        this.communicationLayer = communicationLayer;
-        this.storageLayer = storageLayer;
-        this.config = config;
-        this.id = id;
-        this.electionInterval = null;
-        this.commitIndex = 0;
-        this.lastApplied = 0;
-        this.log = new Log();
-
-        this.start();
+        this(id, config, communicationLayer, storageLayer, null);
     }
 
 
     public RaftNode(int id, RaftNetworkConfig config, CommunicationLayer communicationLayer, StorageLayer storageLayer, Integer electionInterval) {
+        this.executorService = Executors.newFixedThreadPool(3);
         this.communicationLayer = communicationLayer;
         this.storageLayer = storageLayer;
         this.config = config;
         this.id = id;
         this.electionInterval = electionInterval;
+        this.log = new Log();
         this.start();
 
     }
@@ -81,24 +77,6 @@ public class RaftNode {
 
     public void setVotedFor(int votedFor) {
         this.votedFor = votedFor;
-    }
-
-    public void setCommitIndex(int commitIndex) {
-        this.commitIndex = commitIndex;
-
-        if (this.commitIndex > this.lastApplied) {
-            this.lastApplied = this.lastApplied + 1;
-            this.applyToStateMachine(this.getLog().getLastCommandAtIndex(this.lastApplied));
-        }
-    }
-
-
-    public int getCommitIndex() {
-        return commitIndex;
-    }
-
-    public int getLastApplied() {
-        return lastApplied;
     }
 
     public RaftNetworkConfig getConfig() {
@@ -141,7 +119,7 @@ public class RaftNode {
                 this.getPrevLogIndex(),
                 this.getPrevLogTerm(),
                 entries,
-                this.getCommitIndex()
+                this.getLog().getCommitIndex()
         );
         return this.getConfig()
                 .getNodeAddresses()
@@ -179,23 +157,43 @@ public class RaftNode {
     }
 
     public RPCVoteRequestResponse handleRPCVoteRequest(RPCVoteRequestRequest request) {
-        return this.role.handleRPCVoteRequest(this, request);
+        return this.role.handleRPCVoteRequest(request);
     }
 
     public RPCAppendEntriesResponse handleAppendEntriesRequest(RPCAppendEntriesRequest request) {
-        return this.role.handleRPCAppendEntriesRequest(this, request);
+        return this.role.handleRPCAppendEntriesRequest(request);
     }
 
     public ClientRequestResponse handleClientRequest(ClientRequest request) {
-        return this.role.handleClientRequest(this, request);
+        return this.role.handleClientRequest(request);
     }
 
     public void appendEntryToLog(String command) {
         this.getLog().appendEntry(this.getCurrentTerm(), command);
     }
 
-    public void applyToStateMachine(String command) {
-        // TODO
+    public void forAllOtherNodes(Consumer<Integer> func){
+        for(int nodeId = 0; nodeId < this.getConfig().getNodeAddresses().size(); nodeId++) {
+            if (nodeId != this.getId()) {
+                final int copyNodeId = nodeId;
+                executorService.execute(() -> func.accept(copyNodeId));
+            }
+        }
     }
 
+
+
+    public RPCAppendEntriesResponse sendRPCAppendEntriesRequest(List<LogEntry> newEntries, int nodeId) {
+        RPCAppendEntriesRequest request = new RPCAppendEntriesRequest(
+                this.getCurrentTerm(),
+                this.getId(),
+                this.getPrevLogIndex(),
+                this.getPrevLogTerm(),
+                newEntries,
+                this.getLog().getCommitIndex()
+        );
+
+        String address = this.getConfig().getAddressFromId(nodeId);
+        return this.communicationLayer.sendRPCAppendEntriesRequest(request, address);
+    }
 }

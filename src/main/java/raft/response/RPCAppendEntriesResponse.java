@@ -10,4 +10,7 @@ public class RPCAppendEntriesResponse extends RPCResponse {
         this.success = success;
     }
 
+    public boolean isSuccess() {
+        return success;
+    }
 }

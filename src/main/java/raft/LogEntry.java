@@ -8,6 +8,8 @@ public class LogEntry {
     int term;
     String command;
 
+    public LogEntry(){}
+
     public LogEntry(int index, int term, String command) {
         this.index = index;
         this.term = term;
@@ -45,4 +47,12 @@ public class LogEntry {
         return this.getIndex() == other.getIndex() && this.getTerm() != other.getTerm();
     }
 
+    @Override
+    public String toString() {
+        return "LogEntry{" +
+                "index=" + index +
+                ", term=" + term +
+                ", command='" + command + '\'' +
+                '}';
+    }
 }

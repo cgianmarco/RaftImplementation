@@ -3,6 +3,9 @@ package raft;
 import com.sun.net.httpserver.HttpServer;
 import raft.communication.AsyncCommunicationLayer;
 import raft.communication.CommunicationLayer;
+import raft.request.ClientRequest;
+import raft.request.RPCAppendEntriesRequest;
+import raft.request.RPCVoteRequestRequest;
 import raft.storage.StorageLayer;
 import raft.storage.StorageLayerImpl;
 
@@ -30,8 +33,11 @@ public class MainServer1 {
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
 
 
-        server.createContext("/requestVote", exchange -> Utils.handleRequestVoteRequestForNode(node, exchange));
-        server.createContext("/appendEntries", exchange -> Utils.handleAppendEntriesRequestForNode(node, exchange));
+        // server.createContext("/requestVote", exchange -> Utils.handleRequestVoteRequestForNode(node, exchange));
+        // server.createContext("/appendEntries", exchange -> Utils.handleAppendEntriesRequestForNode(node, exchange));
+        server.createContext("/requestVote", exchange -> Utils.handleRequestForNode(node, exchange, RPCVoteRequestRequest.class, node::handleRPCVoteRequest));
+        server.createContext("/appendEntries", exchange -> Utils.handleRequestForNode(node, exchange, RPCAppendEntriesRequest.class, node::handleAppendEntriesRequest));
+        server.createContext("/clientRequest", exchange -> Utils.handleRequestForNode(node, exchange, ClientRequest.class, node::handleClientRequest));
 
 
         // // Start the server

@@ -1,28 +1,52 @@
 package raft;
 
+import raft.response.RPCAppendEntriesResponse;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Log {
     List<LogEntry> entries;
+    int commitIndex;
+    int lastApplied;
 
     public Log(){
+
         this.entries = new ArrayList<>();
+        this.commitIndex = 0;
+        this.lastApplied = 0;
+
+    }
+
+    public int getCommitIndex() {
+        return commitIndex;
+    }
+
+    public int getLastApplied() {
+        return lastApplied;
+    }
+
+    public void setCommitIndex(int commitIndex) {
+        this.commitIndex = commitIndex;
+
+        if (this.commitIndex > this.lastApplied) {
+            this.lastApplied = this.lastApplied + 1;
+            this.applyToStateMachine(this.getLastCommandAtIndex(this.lastApplied));
+        }
     }
 
     public int getLastLogIndex(){
         if(this.entries.isEmpty()){
             return 0;
         }
-
-        return this.entries.size() - 1;
+        return this.entries.stream().mapToInt(entry -> entry.getIndex()).min().orElse(0);
     }
     public int getLastLogTerm(){
         if(this.entries.isEmpty()){
             return 0;
         }
 
-        return this.entries.get(this.entries.size() - 1).getTerm();
+        return this.getEntryByIndex(this.getLastLogIndex()).getTerm();
     }
 
     public List<LogEntry> getEntriesStartingFromIndex(int index){
@@ -31,7 +55,7 @@ public class Log {
         return this.entries.subList(index, logSize);
     }
 
-    public boolean hasLogAtLeastAsUpToDate(int otherLastLogIndex, int otherLastLogTerm){
+    public boolean isAtLeastAsUpToDate(int otherLastLogIndex, int otherLastLogTerm){
         int thisLastLogIndex = this.getLastLogIndex();
         int thisLastLogTerm = this.getLastLogTerm();
         if(thisLastLogTerm != otherLastLogTerm){
@@ -68,29 +92,88 @@ public class Log {
         this.entries = this.entries.subList(0, minIndex);
     }
 
-    public void appendEntries(List<LogEntry> newEntries){
+    public void appendNonExistingEntries(List<LogEntry> newEntries){
         for(LogEntry newEntry : newEntries){
             if(!this.entries.contains(newEntry)){
                 this.entries.add(newEntry);
             }
         }
+
+        if(!newEntries.isEmpty())
+            this.onLogChanged();
     }
 
     public void appendEntry(int term, String command){
-        int nextIndex = this.getSize();
+        int nextIndex = this.getSize() + 1;
         this.entries.add(new LogEntry(nextIndex, term, command));
+        this.onLogChanged();
     }
 
     public String getLastCommandAtIndex(int index){
-        return this.entries.get(index).getCommand();
+        return this.getEntryByIndex(index).getCommand();
     }
 
     public LogEntry getEntryByIndex(int index){
-        return this.entries.get(index);
+        if(index < 1 || index >= this.entries.size()) {
+            return null;
+        }
+        return this.entries.stream().filter(entry -> entry.getIndex() == index).findFirst().orElse(null);
     }
 
     public int getSize(){
         return this.entries.size();
+    }
+
+    public boolean checkConsistency(int prevLogIndex, int prevLogTerm){
+        LogEntry logEntry = this.getEntryByIndex(prevLogIndex);
+
+        if(logEntry == null) {
+            return true;
+        }
+
+        if (logEntry.getTerm() != prevLogTerm) {
+            return false;
+        }else{
+            return true;
+        }
+    }
+
+    public void applyToStateMachine(String command) {
+        // TODO
+    }
+
+    public void addNonConflictingEntries(List<LogEntry> newEntries){
+
+        if(!newEntries.isEmpty()){
+            System.out.println("Requested to add entries:");
+            newEntries.forEach(System.out::println);
+        }
+
+        // If an existing entry conflicts with a new one (same index but different terms)
+        // delete the existing entry and all that follow it
+        this.resolveConflictsWithNewEntries(newEntries);
+
+        // Append new entries not already in the log
+        this.appendNonExistingEntries(newEntries);
+    }
+
+    public void commitEntriesUpTo(int leaderCommit) {
+        // If leaderCommit > commitIndex,
+        // set commitIndex = min(leaderCommit, index of last new entry)
+        if(leaderCommit > this.getCommitIndex()){
+            int maxNewIndex = this.getLastLogIndex();
+            this.setCommitIndex(Math.min(leaderCommit, maxNewIndex));
+        }
+    }
+
+    public static int getLastIndexOfEntries(List<LogEntry> newEntries){
+        return newEntries.stream().mapToInt(entry -> entry.getIndex()).max().orElse(0);
+    }
+
+    public void onLogChanged(){
+        System.out.println("--------Log---------");
+        this.entries.forEach(entry -> System.out.println(entry));
+        System.out.println("--------End---------");
     }
 
 }

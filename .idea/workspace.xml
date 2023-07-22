@@ -5,15 +5,23 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3cdaa32e-4803-4324-b5b7-79c0349d0c78" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/raft/Log.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/raft/LogTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/Log.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/Log.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/LogEntry.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/LogEntry.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/MainServer1.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/MainServer1.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/raft/RaftNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/RaftNode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/raft/State.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/Utils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/request/RPCAppendEntriesRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/request/RPCAppendEntriesRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/response/ClientRequestResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/response/ClientRequestResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/response/RPCAppendEntriesResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/response/RPCAppendEntriesResponse.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/raft/roles/Candidate.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/roles/Candidate.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/roles/Follower.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/roles/Follower.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/raft/roles/Leader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/roles/Leader.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/raft/roles/Role.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/roles/Role.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/raft/storage/StorageLayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/storage/StorageLayer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/raft/storage/StorageLayerImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/storage/StorageLayerImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/tasks/ElectionTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/tasks/ElectionTask.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/tasks/HeartbeatTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/tasks/HeartbeatTask.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,6 +32,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Class" />
+        <option value="JUnit3 Test Class" />
       </list>
     </option>
   </component>
@@ -51,28 +60,36 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary": "JUnit3",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit3": "junit.framework.TestCase"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
       <recent name="raft.response" />
       <recent name="raft.request" />
       <recent name="raft" />
     </key>
+    <key name="CreateTestDialog.Recents.Supers">
+      <recent name="junit.framework.TestCase" />
+    </key>
+    <key name="CreateTestDialog.RecentsKey">
+      <recent name="raft" />
+    </key>
   </component>
-  <component name="RunManager" selected="Application.raft.MainServer1">
+  <component name="RunManager" selected="Application.MainServer3">
     <configuration name="MainServer1" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="org.example.MainServer1" />
+      <option name="MAIN_CLASS_NAME" value="raft.MainServer1" />
       <module name="RaftImplementation" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="org.example.*" />
+          <option name="PATTERN" value="raft.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -81,11 +98,11 @@
       </method>
     </configuration>
     <configuration name="MainServer2" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="org.example.MainServer2" />
+      <option name="MAIN_CLASS_NAME" value="raft.MainServer2" />
       <module name="RaftImplementation" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="org.example.*" />
+          <option name="PATTERN" value="raft.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -106,8 +123,7 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="raft.MainServer1" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="raft.MainServer1" />
+    <configuration name="LogTest.testGetEntriesStartingFromIndexWhenLogIsEmpty" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="RaftImplementation" />
       <extension name="coverage">
         <pattern>
@@ -115,12 +131,15 @@
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
+      <option name="PACKAGE_NAME" value="raft" />
+      <option name="MAIN_CLASS_NAME" value="raft.LogTest" />
+      <option name="METHOD_NAME" value="testGetEntriesStartingFromIndexWhenLogIsEmpty" />
+      <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="raft.MainServer2" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="raft.MainServer2" />
+    <configuration name="LogTest.testResolveConflictsWithNewEntries" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="RaftImplementation" />
       <extension name="coverage">
         <pattern>
@@ -128,17 +147,21 @@
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
+      <option name="PACKAGE_NAME" value="raft" />
+      <option name="MAIN_CLASS_NAME" value="raft.LogTest" />
+      <option name="METHOD_NAME" value="testResolveConflictsWithNewEntries" />
+      <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.raft.MainServer1" />
-        <item itemvalue="Application.raft.MainServer2" />
-        <item itemvalue="Application.MainServer3" />
         <item itemvalue="Application.MainServer2" />
         <item itemvalue="Application.MainServer1" />
+        <item itemvalue="Application.MainServer3" />
+        <item itemvalue="JUnit.LogTest.testGetEntriesStartingFromIndexWhenLogIsEmpty" />
+        <item itemvalue="JUnit.LogTest.testResolveConflictsWithNewEntries" />
       </list>
     </recent_temporary>
   </component>
