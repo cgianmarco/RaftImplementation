@@ -47,11 +47,23 @@ public class Leader extends Role {
 
     }
 
+    public void sendHeartBeat(int nodeId){
+        RPCAppendEntriesResponse response = node.sendRPCAppendEntriesRequest(new ArrayList<>(), nodeId);
+        this.handleRPCAppendEntriesResponse(response);
+    }
+
+    public void sendEntriesOrHeartbeat(int nodeId){
+        if(this.node.getLog().getLastLogIndex() >= this.nextIndex.get(nodeId)){
+            sendRequest(nodeId);
+        }else{
+            sendHeartBeat(nodeId);
+        }
+    }
+
+
     @Override
     public void onHeartbeatTimeoutElapsed() {
-        List<RPCAppendEntriesResponse> responses = node
-                .sendRPCAppendEntriesRequests(new ArrayList<>());
-        responses.forEach(response -> this.handleRPCAppendEntriesResponse(response));
+        this.node.forAllOtherNodes(nodeId -> sendEntriesOrHeartbeat(nodeId));
     }
     public void transitionToLeader(){
         this.timer.cancel();
@@ -84,6 +96,8 @@ public class Leader extends Role {
 
             RPCAppendEntriesResponse response = node.sendRPCAppendEntriesRequest(newEntries, nodeId);
 
+            this.handleRPCAppendEntriesResponse(response);
+
 
             if (response != null && response.isSuccess()) {
                 this.updateNextIndex(newEntries, nodeId);
@@ -96,6 +110,7 @@ public class Leader extends Role {
 //                }
 //                this.decrementNextIndex(nodeId);
 //            }
+
         }
     // }
 

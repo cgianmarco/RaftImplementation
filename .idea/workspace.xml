@@ -6,9 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="3cdaa32e-4803-4324-b5b7-79c0349d0c78" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/raft/Log.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/Log.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/raft/communication/AsyncCommunicationLayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/communication/AsyncCommunicationLayer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/raft/LogTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/raft/LogTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/roles/Leader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/roles/Leader.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
