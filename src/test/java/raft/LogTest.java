@@ -23,7 +23,7 @@ public class LogTest extends TestCase {
         log.appendEntry(3, "WRITE");
         log.appendEntry(3, "WRITE");
 
-        assertEquals(2, log.getLastLogIndex());
+        assertEquals(3, log.getLastLogIndex());
     }
 
     public void testGetLastLogTerm() {
@@ -41,18 +41,18 @@ public class LogTest extends TestCase {
         log.appendEntry(4, "WRITE");
         log.appendEntry(5, "WRITE");
 
-        List<LogEntry> entries = log.getEntriesStartingFromIndex(2);
+        List<LogEntry> entries = log.getEntriesStartingFromIndex(3);
         assertEquals(3, entries.size());
 
-        assertEquals(2, entries.get(0).getIndex());
+        assertEquals(3, entries.get(0).getIndex());
         assertEquals(3, entries.get(0).getTerm());
         assertEquals("WRITE", entries.get(0).getCommand());
 
-        assertEquals(3, entries.get(1).getIndex());
+        assertEquals(4, entries.get(1).getIndex());
         assertEquals(4, entries.get(1).getTerm());
         assertEquals("WRITE", entries.get(1).getCommand());
 
-        assertEquals(4, entries.get(2).getIndex());
+        assertEquals(5, entries.get(2).getIndex());
         assertEquals(5, entries.get(2).getTerm());
         assertEquals("WRITE", entries.get(2).getCommand());
     }
@@ -80,9 +80,9 @@ public class LogTest extends TestCase {
         log.appendEntry(3, "WRITE");
 
         List<LogEntry> newEntries = new ArrayList<>();
-        LogEntry entry1 = new LogEntry(0, 2, "WRITE");
-        LogEntry entry2 = new LogEntry(1, 3, "WRITE");
-        LogEntry entry3 = new LogEntry(2, 4, "WRITE");
+        LogEntry entry1 = new LogEntry(1, 2, "WRITE");
+        LogEntry entry2 = new LogEntry(2, 3, "WRITE");
+        LogEntry entry3 = new LogEntry(3, 4, "WRITE");
 
         newEntries.add(entry1);
         newEntries.add(entry2);
@@ -90,9 +90,9 @@ public class LogTest extends TestCase {
 
         log.resolveConflictsWithNewEntries(newEntries);
 
-        assertEquals(2, log.getSize());
-        assertEquals(entry1, log.getEntryByIndex(0));
-        assertEquals(entry2, log.getEntryByIndex(1));
+        assertEquals(3, log.getSize());
+        assertEquals(entry1, log.getEntryByIndex(1));
+        assertEquals(entry2, log.getEntryByIndex(2));
     }
 
     public void testAppendNonExistingEntries() {
@@ -101,9 +101,9 @@ public class LogTest extends TestCase {
         log.appendEntry(3, "WRITE");
 
         List<LogEntry> newEntries = new ArrayList<>();
-        LogEntry entry1 = new LogEntry(0, 2, "WRITE");
-        LogEntry entry2 = new LogEntry(1, 3, "WRITE");
-        LogEntry entry3 = new LogEntry(3, 4, "WRITE");
+        LogEntry entry1 = new LogEntry(1, 2, "WRITE");
+        LogEntry entry2 = new LogEntry(2, 3, "WRITE");
+        LogEntry entry3 = new LogEntry(4, 5, "WRITE");
 
         newEntries.add(entry1);
         newEntries.add(entry2);
@@ -111,10 +111,15 @@ public class LogTest extends TestCase {
 
         log.appendNonExistingEntries(newEntries);
         assertEquals(4, log.getSize());
-        assertEquals(entry3, log.getEntryByIndex(3));
+        assertEquals(entry3, log.getEntryByIndex(4));
     }
 
     public void testAppendEntry() {
+        log.appendEntry(2, "WRITE");
+        assertEquals(1, log.getEntryByIndex(1).getIndex());
+        assertEquals(2, log.getEntryByIndex(1).getTerm());
+        assertEquals("WRITE", log.getEntryByIndex(1).getCommand());
+
     }
 
     public void testGetLastCommandAtIndex() {

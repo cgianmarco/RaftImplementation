@@ -36,7 +36,7 @@ public class AsyncCommunicationLayer implements CommunicationLayer {
         try {
             return responsePromise.get();
         } catch (Exception e) {
-            return null;
+            return new RPCVoteRequestResponse();
         }
     }
 
@@ -59,7 +59,7 @@ public class AsyncCommunicationLayer implements CommunicationLayer {
         try {
             return responsePromise.get();
         } catch (Exception e) {
-            return null;
+            return new RPCAppendEntriesResponse();
         }
     }
 }

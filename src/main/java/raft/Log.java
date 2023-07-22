@@ -39,7 +39,7 @@ public class Log {
         if(this.entries.isEmpty()){
             return 0;
         }
-        return this.entries.stream().mapToInt(entry -> entry.getIndex()).min().orElse(0);
+        return this.entries.stream().mapToInt(entry -> entry.getIndex()).max().orElse(0);
     }
     public int getLastLogTerm(){
         if(this.entries.isEmpty()){
@@ -50,9 +50,9 @@ public class Log {
     }
 
     public List<LogEntry> getEntriesStartingFromIndex(int index){
-        int logSize = this.entries.size();
-        if(index >= logSize || index < 0) return List.of();
-        return this.entries.subList(index, logSize);
+        int lastIndex = this.getLastLogIndex();
+        if(index > lastIndex || index < 0) return List.of();
+        return this.entries.stream().filter(entry -> entry.getIndex() >= index && entry.getIndex() <= lastIndex).toList();
     }
 
     public boolean isAtLeastAsUpToDate(int otherLastLogIndex, int otherLastLogTerm){
@@ -114,7 +114,7 @@ public class Log {
     }
 
     public LogEntry getEntryByIndex(int index){
-        if(index < 1 || index >= this.entries.size()) {
+        if(index < 1 || index > this.getLastLogIndex()) {
             return null;
         }
         return this.entries.stream().filter(entry -> entry.getIndex() == index).findFirst().orElse(null);
