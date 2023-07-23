@@ -40,7 +40,7 @@ public class RaftNode {
 
 
     public RaftNode(int id, RaftNetworkConfig config, CommunicationLayer communicationLayer, StorageLayer storageLayer, Integer electionInterval) {
-        this.executorService = Executors.newFixedThreadPool(3);
+        this.executorService = Executors.newFixedThreadPool(5);
         this.communicationLayer = communicationLayer;
         this.storageLayer = storageLayer;
         this.config = config;
@@ -153,7 +153,7 @@ public class RaftNode {
     }
 
     public int getHeartbeatInterval() {
-        return 20;
+        return 10;
     }
 
     public RPCVoteRequestResponse handleRPCVoteRequest(RPCVoteRequestRequest request) {

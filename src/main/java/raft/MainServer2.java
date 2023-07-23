@@ -1,5 +1,7 @@
 package raft;
 
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import raft.communication.AsyncCommunicationLayer;
 import raft.communication.CommunicationLayer;
@@ -10,6 +12,38 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class MainServer2 {
+
+    static class requestVoteHttpHandler implements HttpHandler {
+
+        RaftNode node;
+
+        public requestVoteHttpHandler(RaftNode node) {
+            this.node = node;
+        }
+
+        @Override
+        public void handle(HttpExchange exchange) {
+            try {
+                Utils.handleRequestVoteRequestForNode(node, exchange);
+            } catch (Exception e) { }
+        }
+    }
+    static class appendEntriesHttpHandler implements HttpHandler {
+
+        RaftNode node;
+
+        public appendEntriesHttpHandler(RaftNode node) {
+            this.node = node;
+        }
+
+        @Override
+        public void handle(HttpExchange exchange) {
+            try {
+                Utils.handleAppendEntriesRequestForNode(node, exchange);
+            } catch (Exception e) { }
+        }
+    }
+
 
     public static void main(String[] args) throws IOException {
 
@@ -30,8 +64,8 @@ public class MainServer2 {
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
 
 
-        server.createContext("/requestVote", exchange -> Utils.handleRequestVoteRequestForNode(node, exchange));
-        server.createContext("/appendEntries", exchange -> Utils.handleAppendEntriesRequestForNode(node, exchange));
+        server.createContext("/requestVote", new requestVoteHttpHandler(node));
+        server.createContext("/appendEntries", new appendEntriesHttpHandler(node));
 
 
         // // Start the server

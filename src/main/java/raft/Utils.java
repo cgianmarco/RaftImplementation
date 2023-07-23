@@ -31,8 +31,7 @@ public class Utils {
     }
 
 
-    public static void handleRequestVoteRequestForNode(RaftNode node, HttpExchange exchange) {
-        try {
+    public static void handleRequestVoteRequestForNode(RaftNode node, HttpExchange exchange) throws IOException {
 
             String requestBody = getRequestBody(exchange);
 
@@ -51,14 +50,10 @@ public class Utils {
             OutputStream outputStream = exchange.getResponseBody();
             outputStream.write(responseBody.getBytes());
             outputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
-    public static void handleAppendEntriesRequestForNode(RaftNode node, HttpExchange exchange) {
+    public static void handleAppendEntriesRequestForNode(RaftNode node, HttpExchange exchange) throws IOException {
 
-        try {
             String requestBody = getRequestBody(exchange);
 
             // Convert JSON to Java Map
@@ -74,9 +69,6 @@ public class Utils {
             OutputStream outputStream = exchange.getResponseBody();
             outputStream.write(responseBody.getBytes());
             outputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
     }
 
