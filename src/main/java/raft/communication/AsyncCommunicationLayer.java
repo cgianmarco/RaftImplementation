@@ -60,12 +60,12 @@ public class AsyncCommunicationLayer implements CommunicationLayer {
             RPCAppendEntriesResponse response = responsePromise.get();
             Instant end = Instant.now();
             Duration timeElapsed = Duration.between(start, end);
-            System.out.println("Time taken: " + timeElapsed.toMillis() + " milliseconds");
+            // System.out.println("Time taken: " + timeElapsed.toMillis() + " milliseconds");
             return response;
         } catch (Exception e) {
             Instant end = Instant.now();
             Duration timeElapsed = Duration.between(start, end);
-            System.out.println("Time taken: " + timeElapsed.toMillis() + " milliseconds");
+            // System.out.println("Time taken: " + timeElapsed.toMillis() + " milliseconds");
             return new RPCAppendEntriesResponse();
         }
     }

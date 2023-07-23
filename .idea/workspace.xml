@@ -5,11 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3cdaa32e-4803-4324-b5b7-79c0349d0c78" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/raft/State.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dbnode1.db" beforeDir="false" afterPath="$PROJECT_DIR$/dbnode1.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dbnode2.db" beforeDir="false" afterPath="$PROJECT_DIR$/dbnode2.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dbnode3.db" beforeDir="false" afterPath="$PROJECT_DIR$/dbnode3.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/Log.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/Log.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/MainServer1.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/MainServer1.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/raft/MainServer2.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/MainServer2.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/MainServer3.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/MainServer3.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/raft/RaftNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/RaftNode.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/raft/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/Utils.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/raft/communication/AsyncCommunicationLayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/communication/AsyncCommunicationLayer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/communication/CommunicationLayerImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/communication/CommunicationLayerImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/roles/Candidate.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/roles/Candidate.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/roles/Leader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/roles/Leader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/roles/Role.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/roles/Role.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/storage/StorageLayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/storage/StorageLayer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/raft/storage/StorageLayerImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/raft/storage/StorageLayerImpl.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,8 +32,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Class" />
         <option value="JUnit3 Test Class" />
+        <option value="Class" />
       </list>
     </option>
   </component>
@@ -60,9 +73,9 @@
 }</component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
+      <recent name="raft" />
       <recent name="raft.response" />
       <recent name="raft.request" />
-      <recent name="raft" />
     </key>
     <key name="CreateTestDialog.Recents.Supers">
       <recent name="junit.framework.TestCase" />
@@ -144,9 +157,9 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.MainServer1" />
         <item itemvalue="Application.MainServer3" />
         <item itemvalue="Application.MainServer2" />
-        <item itemvalue="Application.MainServer1" />
         <item itemvalue="JUnit.LogTest" />
         <item itemvalue="JUnit.LogTest.testResolveConflictsWithNewEntries" />
       </list>

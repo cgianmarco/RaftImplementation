@@ -1,5 +1,8 @@
 package raft;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import raft.communication.AsyncCommunicationLayer;
 import raft.communication.CommunicationLayer;
@@ -9,10 +12,16 @@ import raft.request.RPCVoteRequestRequest;
 import raft.storage.StorageLayer;
 import raft.storage.StorageLayerImpl;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.util.function.Function;
 
 public class MainServer1 {
+
+
 
     public static void main(String[] args) throws IOException {
 
@@ -35,9 +44,9 @@ public class MainServer1 {
 
         // server.createContext("/requestVote", exchange -> Utils.handleRequestVoteRequestForNode(node, exchange));
         // server.createContext("/appendEntries", exchange -> Utils.handleAppendEntriesRequestForNode(node, exchange));
-        server.createContext("/requestVote", exchange -> Utils.handleRequestForNode(node, exchange, RPCVoteRequestRequest.class, node::handleRPCVoteRequest));
-        server.createContext("/appendEntries", exchange -> Utils.handleRequestForNode(node, exchange, RPCAppendEntriesRequest.class, node::handleAppendEntriesRequest));
-        server.createContext("/clientRequest", exchange -> Utils.handleRequestForNode(node, exchange, ClientRequest.class, node::handleClientRequest));
+        server.createContext("/requestVote", new Utils.requestVoteHttpHandler(node));
+        server.createContext("/appendEntries", new Utils.appendEntriesHttpHandler(node));
+        server.createContext("/clientRequest", new Utils.clientRequestHttpHandler(node));
 
 
         // // Start the server

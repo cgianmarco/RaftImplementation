@@ -63,6 +63,7 @@ public class Leader extends Role {
 
     @Override
     public void onHeartbeatTimeoutElapsed() {
+        this.node.getLog().updateCommitIndex(this.matchIndex, this.node.getCurrentTerm());
         this.node.forAllOtherNodes(nodeId -> sendEntriesOrHeartbeat(nodeId));
     }
     public void transitionToLeader(){
@@ -79,11 +80,11 @@ public class Leader extends Role {
         node.setRole(follower);
     }
 
-    void updateNextIndex(List<LogEntry> newEntries, int nodeId){
-        this.nextIndex.set(nodeId, Log.getLastIndexOfEntries(newEntries) + 1);
+    void setNextIndex(int nextIndex, int nodeId){
+        this.nextIndex.set(nodeId, nextIndex);
     }
-    private void updateMatchIndex(List<LogEntry> newEntries, int nodeId) {
-        this.matchIndex.set(nodeId, Log.getLastIndexOfEntries(newEntries));
+    private void setMatchIndex(int matchIndex, int nodeId) {
+        this.matchIndex.set(nodeId, matchIndex);
     }
     private void decrementNextIndex(int nodeId) {
         this.nextIndex.set(nodeId, this.nextIndex.get(nodeId) - 1);
@@ -100,8 +101,8 @@ public class Leader extends Role {
 
 
             if (response != null && response.isSuccess()) {
-                this.updateNextIndex(newEntries, nodeId);
-                this.updateMatchIndex(newEntries, nodeId);
+                this.setNextIndex(Log.getLastIndexOfEntries(newEntries) + 1, nodeId);
+                this.setMatchIndex(Log.getLastIndexOfEntries(newEntries), nodeId);
                 //break;
             }
 //            else {
@@ -117,6 +118,8 @@ public class Leader extends Role {
     @Override
     public ClientRequestResponse handleClientRequest(ClientRequest request) {
         node.appendEntryToLog(request.getCommand());
+        this.setNextIndex(this.node.getLog().getLastLogIndex() + 1, this.node.getId());
+        this.setMatchIndex(this.node.getLog().getLastLogIndex(), this.node.getId());
         nextIndex.forEach(nextIndexForId -> System.out.println(nextIndexForId));
         node.forAllOtherNodes(nodeId -> sendRequest(nodeId));
         return new ClientRequestResponse(true); // Will become ClientRequestResponse(result)

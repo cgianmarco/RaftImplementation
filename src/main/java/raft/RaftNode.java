@@ -11,10 +11,7 @@ import raft.roles.Follower;
 import raft.roles.Role;
 import raft.storage.StorageLayer;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
@@ -40,7 +37,7 @@ public class RaftNode {
 
 
     public RaftNode(int id, RaftNetworkConfig config, CommunicationLayer communicationLayer, StorageLayer storageLayer, Integer electionInterval) {
-        this.executorService = Executors.newFixedThreadPool(5);
+        this.executorService = Executors.newFixedThreadPool(10);
         this.communicationLayer = communicationLayer;
         this.storageLayer = storageLayer;
         this.config = config;
@@ -52,6 +49,11 @@ public class RaftNode {
     }
 
     public void start() {
+        Optional<State> state = this.storageLayer.recoverFromDisk();
+
+        this.log = state.map(State::getLog).orElse(new Log());
+        this.currentTerm = state.map(State::getCurrentTerm).orElse(0);
+        this.votedFor = state.map(State::getVotedFor).orElse(-1);
         this.role = new Follower(this);
     }
 
@@ -71,13 +73,22 @@ public class RaftNode {
         return log;
     }
 
-    public void setCurrentTerm(int currentTerm) {
+    public void assignVoteForTerm(int votedFor, int currentTerm) {
         this.currentTerm = currentTerm;
+        this.votedFor = votedFor;
+        this.onStateChanged();
     }
 
-    public void setVotedFor(int votedFor) {
-        this.votedFor = votedFor;
+    public void onStateChanged(){
+        executorService.execute(() -> this.storageLayer.persistToDisk(
+                new State(
+                        this.getCurrentTerm(),
+                        this.getVotedFor(),
+                        this.getLog()
+                )));
     }
+
+
 
     public RaftNetworkConfig getConfig() {
         return this.config;
@@ -131,6 +142,7 @@ public class RaftNode {
     private int getPrevLogIndex() {
         return 0; //TODO
     }
+
     private int getPrevLogTerm() {
         return 0;  //TODO
     }
@@ -169,18 +181,19 @@ public class RaftNode {
     }
 
     public void appendEntryToLog(String command) {
+
         this.getLog().appendEntry(this.getCurrentTerm(), command);
+        this.onStateChanged();
     }
 
-    public void forAllOtherNodes(Consumer<Integer> func){
-        for(int nodeId = 0; nodeId < this.getConfig().getNodeAddresses().size(); nodeId++) {
+    public void forAllOtherNodes(Consumer<Integer> func) {
+        for (int nodeId = 0; nodeId < this.getConfig().getNodeAddresses().size(); nodeId++) {
             if (nodeId != this.getId()) {
                 final int copyNodeId = nodeId;
                 executorService.execute(() -> func.accept(copyNodeId));
             }
         }
     }
-
 
 
     public RPCAppendEntriesResponse sendRPCAppendEntriesRequest(List<LogEntry> newEntries, int nodeId) {

@@ -29,8 +29,7 @@ public abstract class Role {
         if (response != null) {
             int term = response.getTerm();
             if (term > node.getCurrentTerm()) {
-                node.setCurrentTerm(term);
-                node.setVotedFor(-1);
+                node.assignVoteForTerm(-1, term);
                 this.transitionToFollower();
             }
         }
@@ -50,8 +49,7 @@ public abstract class Role {
     public RPCVoteRequestResponse handleRPCVoteRequest(RPCVoteRequestRequest request) {
         int term = request.getTerm();
         if (term > node.getCurrentTerm()) {
-            node.setCurrentTerm(term);
-            node.setVotedFor(request.getCandidateId());
+            node.assignVoteForTerm(request.getCandidateId(), term);
             this.transitionToFollower();
         }
 
@@ -62,8 +60,7 @@ public abstract class Role {
         if ((node.getVotedFor() == -1 || node.getVotedFor() == request.getCandidateId()) &&
                 node.getLog().isAtLeastAsUpToDate(request.getLastLogIndex(), request.getLastLogTerm())) {
 
-            node.setCurrentTerm(term);
-            node.setVotedFor(request.getCandidateId());
+            node.assignVoteForTerm(request.getCandidateId(), term);
             return new RPCVoteRequestResponse(node.getCurrentTerm(), true);
         }
 
@@ -73,8 +70,7 @@ public abstract class Role {
     public RPCAppendEntriesResponse handleRPCAppendEntriesRequest(RPCAppendEntriesRequest request) {
         int term = request.getTerm();
         if (term >= node.getCurrentTerm()) {
-            node.setCurrentTerm(term);
-            node.setVotedFor(request.getLeaderId());
+            node.assignVoteForTerm(request.getLeaderId(), term);
             this.transitionToFollower();
         }
 
@@ -90,6 +86,8 @@ public abstract class Role {
 
         node.getLog().addNonConflictingEntries(request.getEntries());
         node.getLog().commitEntriesUpTo(request.getLeaderCommit());
+
+        node.onStateChanged();
 
         return new RPCAppendEntriesResponse(node.getCurrentTerm(), true);
     }

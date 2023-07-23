@@ -13,37 +13,6 @@ import java.net.InetSocketAddress;
 
 public class MainServer2 {
 
-    static class requestVoteHttpHandler implements HttpHandler {
-
-        RaftNode node;
-
-        public requestVoteHttpHandler(RaftNode node) {
-            this.node = node;
-        }
-
-        @Override
-        public void handle(HttpExchange exchange) {
-            try {
-                Utils.handleRequestVoteRequestForNode(node, exchange);
-            } catch (Exception e) { }
-        }
-    }
-    static class appendEntriesHttpHandler implements HttpHandler {
-
-        RaftNode node;
-
-        public appendEntriesHttpHandler(RaftNode node) {
-            this.node = node;
-        }
-
-        @Override
-        public void handle(HttpExchange exchange) {
-            try {
-                Utils.handleAppendEntriesRequestForNode(node, exchange);
-            } catch (Exception e) { }
-        }
-    }
-
 
     public static void main(String[] args) throws IOException {
 
@@ -64,8 +33,9 @@ public class MainServer2 {
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
 
 
-        server.createContext("/requestVote", new requestVoteHttpHandler(node));
-        server.createContext("/appendEntries", new appendEntriesHttpHandler(node));
+        server.createContext("/requestVote", new Utils.requestVoteHttpHandler(node));
+        server.createContext("/appendEntries", new Utils.appendEntriesHttpHandler(node));
+        server.createContext("/clientRequest", new Utils.clientRequestHttpHandler(node));
 
 
         // // Start the server

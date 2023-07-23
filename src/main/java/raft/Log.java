@@ -1,13 +1,23 @@
 package raft;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import raft.response.RPCAppendEntriesResponse;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class Log {
     List<LogEntry> entries;
+
+    @JsonIgnore
+    @JsonProperty(defaultValue = "0")
     int commitIndex;
+
+    @JsonIgnore
+    @JsonProperty(defaultValue = "0")
     int lastApplied;
 
     public Log(){
@@ -26,21 +36,32 @@ public class Log {
         return lastApplied;
     }
 
+    public List<LogEntry> getEntries() {
+        return entries;
+    }
+
     public void setCommitIndex(int commitIndex) {
+        int oldCommitIndex = this.commitIndex;
         this.commitIndex = commitIndex;
 
         if (this.commitIndex > this.lastApplied) {
             this.lastApplied = this.lastApplied + 1;
             this.applyToStateMachine(this.getLastCommandAtIndex(this.lastApplied));
         }
+
+        if(oldCommitIndex != this.commitIndex)
+            this.onLogChanged();
     }
 
+    @JsonIgnore
     public int getLastLogIndex(){
         if(this.entries.isEmpty()){
             return 0;
         }
         return this.entries.stream().mapToInt(entry -> entry.getIndex()).max().orElse(0);
     }
+
+    @JsonIgnore
     public int getLastLogTerm(){
         if(this.entries.isEmpty()){
             return 0;
@@ -120,6 +141,7 @@ public class Log {
         return this.entries.stream().filter(entry -> entry.getIndex() == index).findFirst().orElse(null);
     }
 
+    @JsonIgnore
     public int getSize(){
         return this.entries.size();
     }
@@ -172,8 +194,31 @@ public class Log {
 
     public void onLogChanged(){
         System.out.println("--------Log---------");
+        System.out.println("commitIndex: " + commitIndex);
         this.entries.forEach(entry -> System.out.println(entry));
         System.out.println("--------End---------");
+    }
+
+    public void updateCommitIndex(List<Integer> matchIndex, int currentTerm){
+        int oldCommitIndex = this.commitIndex;
+        int N = this.commitIndex + 1;
+
+        List<Integer> sortedMatchIndex = new ArrayList<>(matchIndex);
+
+        Collections.sort(sortedMatchIndex);
+        int majority = sortedMatchIndex.get(sortedMatchIndex.size() / 2);
+
+        // Check if there's an N such that N > commitIndex,
+        // a majority of matchIndex[i] >= N, and log[N].term == currentTerm
+        while (majority >= N && this.getEntryByIndex(N).getTerm() == currentTerm) {
+            N++;
+        }
+
+        // Set commitIndex to N - 1 (since we looped beyond the valid index)
+        this.commitIndex = N - 1;
+
+        if(this.commitIndex != oldCommitIndex)
+            this.onLogChanged();
     }
 
 }

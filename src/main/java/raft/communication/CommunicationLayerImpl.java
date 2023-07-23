@@ -56,7 +56,7 @@ public class CommunicationLayerImpl implements CommunicationLayer{
 
     @Override
     public RPCAppendEntriesResponse sendRPCAppendEntriesRequest(RPCAppendEntriesRequest request, String address) {
-        int requestTimeout = 40;
+        int requestTimeout = 140;
         RequestConfig requestConfig = RequestConfig.custom()
                 .setSocketTimeout(requestTimeout)
                 .setConnectTimeout(requestTimeout)

@@ -1,13 +1,14 @@
 package raft.storage;
 
 import raft.RaftNode;
+import raft.State;
 
 import java.util.Optional;
 
 public interface StorageLayer {
-    void persistToDisk(RaftNode node);
+    void persistToDisk(State state);
 
-    Optional<Object> recoverFromDisk();
+    Optional<State> recoverFromDisk();
 
 
 }

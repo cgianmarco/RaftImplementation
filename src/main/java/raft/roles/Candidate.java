@@ -31,8 +31,7 @@ public class Candidate extends Role {
     }
 
     public void startElection() {
-        node.setCurrentTerm(node.getCurrentTerm() + 1);
-        node.setVotedFor(node.getId());
+        node.assignVoteForTerm(node.getId(), node.getCurrentTerm() + 1);
         this.resetElectionTimer();
         List<RPCVoteRequestResponse> responses = node
                 .sendRPCVoteRequests();
@@ -62,8 +61,7 @@ public class Candidate extends Role {
 
         int term = request.getTerm();
         if (term >= node.getCurrentTerm()) {
-            node.setCurrentTerm(term);
-            node.setVotedFor(request.getLeaderId());
+            node.assignVoteForTerm(request.getLeaderId(), term);
             node.setRole(new Follower(node));
         }
 

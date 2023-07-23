@@ -30,8 +30,9 @@ public class MainServer3 {
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
 
 
-        server.createContext("/requestVote", exchange -> Utils.handleRequestVoteRequestForNode(node, exchange));
-        server.createContext("/appendEntries", exchange -> Utils.handleAppendEntriesRequestForNode(node, exchange));
+        server.createContext("/requestVote", new Utils.requestVoteHttpHandler(node));
+        server.createContext("/appendEntries", new Utils.appendEntriesHttpHandler(node));
+        server.createContext("/clientRequest", new Utils.clientRequestHttpHandler(node));
 
 
         // // Start the server
