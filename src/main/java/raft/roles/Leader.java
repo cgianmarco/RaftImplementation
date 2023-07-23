@@ -92,7 +92,6 @@ public class Leader extends Role {
 
 
     public void sendRequest(int nodeId) {
-        //while (this.nextIndex.get(nodeId) >= 0) {
             List<LogEntry> newEntries = node.getLog().getEntriesStartingFromIndex(nextIndex.get(nodeId));
 
             RPCAppendEntriesResponse response = node.sendRPCAppendEntriesRequest(newEntries, nodeId);
@@ -103,24 +102,15 @@ public class Leader extends Role {
             if (response != null && response.isSuccess()) {
                 this.setNextIndex(Log.getLastIndexOfEntries(newEntries) + 1, nodeId);
                 this.setMatchIndex(Log.getLastIndexOfEntries(newEntries), nodeId);
-                //break;
             }
-//            else {
-//                if (this.nextIndex.get(nodeId) == 0) {
-//                    //break;
-//                }
-//                this.decrementNextIndex(nodeId);
-//            }
 
         }
-    // }
 
     @Override
     public ClientRequestResponse handleClientRequest(ClientRequest request) {
         node.appendEntryToLog(request.getCommand());
         this.setNextIndex(this.node.getLog().getLastLogIndex() + 1, this.node.getId());
         this.setMatchIndex(this.node.getLog().getLastLogIndex(), this.node.getId());
-        nextIndex.forEach(nextIndexForId -> System.out.println(nextIndexForId));
         node.forAllOtherNodes(nodeId -> sendRequest(nodeId));
         return new ClientRequestResponse(true); // Will become ClientRequestResponse(result)
     }

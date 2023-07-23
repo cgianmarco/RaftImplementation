@@ -22,6 +22,7 @@ public class RaftNode {
     StorageLayer storageLayer;
     RaftNetworkConfig config;
     ExecutorService executorService;
+    ExecutorService storageExecutorService;
     int currentTerm;
     int votedFor;
     Log log;
@@ -37,13 +38,13 @@ public class RaftNode {
 
 
     public RaftNode(int id, RaftNetworkConfig config, CommunicationLayer communicationLayer, StorageLayer storageLayer, Integer electionInterval) {
-        this.executorService = Executors.newFixedThreadPool(10);
+        this.executorService = Executors.newFixedThreadPool(3);
+        this.storageExecutorService = Executors.newFixedThreadPool(2);
         this.communicationLayer = communicationLayer;
         this.storageLayer = storageLayer;
         this.config = config;
         this.id = id;
         this.electionInterval = electionInterval;
-        this.log = new Log();
         this.start();
 
     }
@@ -80,7 +81,7 @@ public class RaftNode {
     }
 
     public void onStateChanged(){
-        executorService.execute(() -> this.storageLayer.persistToDisk(
+        storageExecutorService.execute(() -> this.storageLayer.persistToDisk(
                 new State(
                         this.getCurrentTerm(),
                         this.getVotedFor(),
@@ -165,7 +166,7 @@ public class RaftNode {
     }
 
     public int getHeartbeatInterval() {
-        return 10;
+        return 30;
     }
 
     public RPCVoteRequestResponse handleRPCVoteRequest(RPCVoteRequestRequest request) {
