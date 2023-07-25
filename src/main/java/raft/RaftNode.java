@@ -6,15 +6,19 @@ import raft.request.RPCAppendEntriesRequest;
 import raft.request.RPCVoteRequestRequest;
 import raft.response.ClientRequestResponse;
 import raft.response.RPCAppendEntriesResponse;
+import raft.response.RPCResponse;
 import raft.response.RPCVoteRequestResponse;
 import raft.roles.Follower;
 import raft.roles.Role;
 import raft.storage.StorageLayer;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class RaftNode {
 
@@ -124,29 +128,33 @@ public class RaftNode {
                 .toList();
     }
 
-    public List<RPCAppendEntriesResponse> sendRPCAppendEntriesRequests(List<LogEntry> entries) {
+    public List<CompletableFuture<RPCAppendEntriesResponse>> sendRPCAppendEntriesRequests(List<LogEntry> newEntries) {
         RPCAppendEntriesRequest request = new RPCAppendEntriesRequest(
                 this.getCurrentTerm(),
                 this.getId(),
                 this.getPrevLogIndex(),
                 this.getPrevLogTerm(),
-                entries,
+                newEntries,
                 this.getLog().getCommitIndex()
         );
+
         return this.getConfig()
                 .getNodeAddresses()
                 .stream()
                 .filter(address -> !address.equals(this.getAddress()))
                 .map(address -> this.communicationLayer.sendRPCAppendEntriesRequest(request, address)).toList();
+
+
     }
 
     private int getPrevLogIndex() {
-        return 0; //TODO
+        return 0; // TODO
     }
 
     private int getPrevLogTerm() {
-        return 0;  //TODO
+        return 0; //TODO
     }
+
 
 
     public int getMajorityCount() {
@@ -187,17 +195,21 @@ public class RaftNode {
         this.onStateChanged();
     }
 
-    public void forAllOtherNodes(Consumer<Integer> func) {
+    public <T extends RPCResponse> List<CompletableFuture<T>> forAllOtherNodes(Function<Integer, CompletableFuture<T>> func) {
+        List<CompletableFuture<T>> futures = new ArrayList<>();
         for (int nodeId = 0; nodeId < this.getConfig().getNodeAddresses().size(); nodeId++) {
             if (nodeId != this.getId()) {
-                final int copyNodeId = nodeId;
-                executorService.execute(() -> func.accept(copyNodeId));
+                futures.add(func.apply(nodeId));
             }
         }
+
+        return futures;
     }
 
 
-    public RPCAppendEntriesResponse sendRPCAppendEntriesRequest(List<LogEntry> newEntries, int nodeId) {
+
+
+    public CompletableFuture<RPCAppendEntriesResponse> sendRPCAppendEntriesRequest(List<LogEntry> newEntries, int nodeId) {
         RPCAppendEntriesRequest request = new RPCAppendEntriesRequest(
                 this.getCurrentTerm(),
                 this.getId(),
@@ -206,7 +218,6 @@ public class RaftNode {
                 newEntries,
                 this.getLog().getCommitIndex()
         );
-
         String address = this.getConfig().getAddressFromId(nodeId);
         return this.communicationLayer.sendRPCAppendEntriesRequest(request, address);
     }

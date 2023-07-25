@@ -3,8 +3,8 @@ package raft;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+import raft.communication.AsyncCommunicationLayer;
 import raft.communication.CommunicationLayer;
-import raft.communication.CommunicationLayerImpl;
 import raft.request.RPCAppendEntriesRequest;
 import raft.request.RPCVoteRequestRequest;
 import raft.response.RPCAppendEntriesResponse;
@@ -89,7 +89,7 @@ public class Main {
         RaftNetworkConfig config = new RaftNetworkConfig("http://localhost:3000/node1", "http://localhost:3000/node2",
                 "http://localhost:3000/node3","http://localhost:3000/node4");
 
-        CommunicationLayer communicationLayer = new CommunicationLayerImpl();
+        CommunicationLayer communicationLayer = new AsyncCommunicationLayer();
         StorageLayer storageLayer = new StorageLayerImpl("dbnode.db");
 
         RaftNode node1 = new RaftNode(0, config, communicationLayer, storageLayer);

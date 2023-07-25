@@ -1,5 +1,6 @@
 package raft.communication;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.asynchttpclient.*;
 import raft.request.RPCAppendEntriesRequest;
@@ -9,6 +10,8 @@ import raft.response.RPCVoteRequestResponse;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 public class AsyncCommunicationLayer implements CommunicationLayer {
 
@@ -42,31 +45,19 @@ public class AsyncCommunicationLayer implements CommunicationLayer {
     }
 
     @Override
-    public RPCAppendEntriesResponse sendRPCAppendEntriesRequest(RPCAppendEntriesRequest request, String address) {
+    public CompletableFuture<RPCAppendEntriesResponse> sendRPCAppendEntriesRequest(RPCAppendEntriesRequest request, String address) {
         ObjectMapper objectMapper = new ObjectMapper();
-        String jsonPayload = "";
-        Instant start = Instant.now();
-        try {
-            jsonPayload = objectMapper.writeValueAsString(request);
 
-            BoundRequestBuilder postRequest = client.preparePost(address + "/appendEntries").setBody(jsonPayload);
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                String jsonPayload = objectMapper.writeValueAsString(request);
+                BoundRequestBuilder postRequest = client.preparePost(address + "/appendEntries").setBody(jsonPayload);
 
-            ListenableFuture<RPCAppendEntriesResponse> responsePromise = postRequest.execute(new AsyncCompletionHandler<RPCAppendEntriesResponse>() {
-                @Override
-                public RPCAppendEntriesResponse onCompleted(Response response) throws Exception {
-                    return objectMapper.readValue(response.getResponseBody(), RPCAppendEntriesResponse.class);
-                }
-            });
-            RPCAppendEntriesResponse response = responsePromise.get();
-            Instant end = Instant.now();
-            Duration timeElapsed = Duration.between(start, end);
-            // System.out.println("Time taken: " + timeElapsed.toMillis() + " milliseconds");
-            return response;
-        } catch (Exception e) {
-            Instant end = Instant.now();
-            Duration timeElapsed = Duration.between(start, end);
-            // System.out.println("Time taken: " + timeElapsed.toMillis() + " milliseconds");
-            return new RPCAppendEntriesResponse();
-        }
+                Response response = postRequest.execute().get();
+                return objectMapper.readValue(response.getResponseBody(), RPCAppendEntriesResponse.class);
+            } catch (Exception e) {
+                throw new CompletionException(e);
+            }
+        });
     }
 }

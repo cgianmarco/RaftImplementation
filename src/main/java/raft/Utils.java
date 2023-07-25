@@ -16,6 +16,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 public class Utils {
@@ -141,5 +144,27 @@ public class Utils {
             outputStream.close();
 
 
+    }
+
+    public static <T> CompletableFuture<List<T>> atLeastN(List<CompletableFuture<T>> futures, int N) {
+        CompletableFuture<List<T>> resultFuture = new CompletableFuture<>();
+        AtomicInteger successfulCount = new AtomicInteger(0);
+        AtomicInteger failedCount = new AtomicInteger(0);
+
+        for (CompletableFuture<T> future : futures) {
+            future.whenComplete((result, throwable) -> {
+                if (throwable != null) {
+                    if (failedCount.incrementAndGet() >= (futures.size() - N + 1)) {
+                        resultFuture.completeExceptionally(new RuntimeException("At least N futures failed"));
+                    }
+                } else {
+                    if (successfulCount.incrementAndGet() >= N) {
+                        resultFuture.complete(null);
+                    }
+                }
+            });
+        }
+
+        return resultFuture;
     }
 }
