@@ -124,7 +124,7 @@ public class Utils {
 //    }
 
 
-    public static <RQ, RS> void handleRequestForNode(RaftNode node, HttpExchange exchange, Class<RQ> requestClass, Function<RQ, RS> handler) throws IOException {
+    public static <RQ, RS> void handleRequestForNode(RaftNode node, HttpExchange exchange, Class<RQ> requestClass, Function<RQ, CompletableFuture<RS>> handler) throws IOException {
 
             String requestBody = getRequestBody(exchange);
 
@@ -133,7 +133,7 @@ public class Utils {
 
             RQ request = objectMapper.readValue(requestBody, requestClass);
 
-            RS response = handler.apply(request);
+            RS response = handler.apply(request).join();
 
             String responseBody = objectMapper.writeValueAsString(response);
 

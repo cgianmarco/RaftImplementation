@@ -28,7 +28,17 @@ public class Leader extends Role {
         super(node);
         this.initializeLeaderState();
 
-        List<CompletableFuture<RPCAppendEntriesResponse>> responses = node.sendRPCAppendEntriesRequests(new ArrayList<>());
+        RPCAppendEntriesRequest request = new RPCAppendEntriesRequest(
+                node.getCurrentTerm(),
+                node.getId(),
+                node.getPrevLogIndex(),
+                node.getPrevLogTerm(),
+                new ArrayList<>(),
+                node.getLog().getCommitIndex()
+        );
+
+        List<CompletableFuture<RPCAppendEntriesResponse>> responses = node.forAllOtherNodes(nodeId -> node.sendRPCAppendEntriesRequest(new ArrayList<>(), nodeId));
+
         responses.forEach(future -> future
                 .thenAccept(response -> this.handleRPCAppendEntriesResponse(response)));
         this.timer = new Timer();

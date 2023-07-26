@@ -8,9 +8,11 @@ import raft.response.RPCAppendEntriesResponse;
 import raft.response.RPCVoteRequestResponse;
 import raft.tasks.ElectionTask;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Timer;
+import java.util.concurrent.CompletableFuture;
 
 public class Candidate extends Role {
 
@@ -33,12 +35,13 @@ public class Candidate extends Role {
     public void startElection() {
         node.assignVoteForTerm(node.getId(), node.getCurrentTerm() + 1);
         this.resetElectionTimer();
-        List<RPCVoteRequestResponse> responses = node
-                .sendRPCVoteRequests();
+        List<CompletableFuture<RPCVoteRequestResponse>> responses = node.forAllOtherNodes(nodeId -> node.sendRPCVoteRequest(nodeId));
 
-        responses.forEach(response -> this.handleRPCVoteRequestResponse(response));
+        responses.forEach(future -> future
+                .thenAccept(response -> this.handleRPCVoteRequestResponse(response)));
 
         int voteCount = responses.stream()
+                .map(future -> future.join())
                 .filter(Objects::nonNull)
                 .mapToInt(response -> response.isVoteGranted() ? 1 : 0)
                 .sum() + 1;

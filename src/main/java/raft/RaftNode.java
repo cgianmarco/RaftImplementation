@@ -109,49 +109,11 @@ public class RaftNode {
     }
 
 
-    public String getAddress() {
-        return this.getConfig().getAddressFromId(this.getId());
-    }
-
-    public List<RPCVoteRequestResponse> sendRPCVoteRequests() {
-        RPCVoteRequestRequest request = new RPCVoteRequestRequest(
-                this.getCurrentTerm(),
-                this.getId(),
-                this.getLog().getLastLogIndex(),
-                this.getLog().getLastLogTerm()
-        );
-        return this.getConfig()
-                .getNodeAddresses()
-                .stream()
-                .filter(address -> !address.equals(this.getAddress()))
-                .map(address -> this.communicationLayer.sendRPCVoteRequest(request, address))
-                .toList();
-    }
-
-    public List<CompletableFuture<RPCAppendEntriesResponse>> sendRPCAppendEntriesRequests(List<LogEntry> newEntries) {
-        RPCAppendEntriesRequest request = new RPCAppendEntriesRequest(
-                this.getCurrentTerm(),
-                this.getId(),
-                this.getPrevLogIndex(),
-                this.getPrevLogTerm(),
-                newEntries,
-                this.getLog().getCommitIndex()
-        );
-
-        return this.getConfig()
-                .getNodeAddresses()
-                .stream()
-                .filter(address -> !address.equals(this.getAddress()))
-                .map(address -> this.communicationLayer.sendRPCAppendEntriesRequest(request, address)).toList();
-
-
-    }
-
-    private int getPrevLogIndex() {
+    public int getPrevLogIndex() {
         return 0; // TODO
     }
 
-    private int getPrevLogTerm() {
+    public int getPrevLogTerm() {
         return 0; //TODO
     }
 
@@ -177,16 +139,16 @@ public class RaftNode {
         return 30;
     }
 
-    public RPCVoteRequestResponse handleRPCVoteRequest(RPCVoteRequestRequest request) {
-        return this.role.handleRPCVoteRequest(request);
+    public CompletableFuture<RPCVoteRequestResponse> handleRPCVoteRequest(RPCVoteRequestRequest request) {
+        return CompletableFuture.supplyAsync(() ->this.role.handleRPCVoteRequest(request));
     }
 
-    public RPCAppendEntriesResponse handleAppendEntriesRequest(RPCAppendEntriesRequest request) {
-        return this.role.handleRPCAppendEntriesRequest(request);
+    public CompletableFuture<RPCAppendEntriesResponse> handleAppendEntriesRequest(RPCAppendEntriesRequest request) {
+        return CompletableFuture.supplyAsync(() -> this.role.handleRPCAppendEntriesRequest(request));
     }
 
-    public ClientRequestResponse handleClientRequest(ClientRequest request) {
-        return this.role.handleClientRequest(request);
+    public CompletableFuture<ClientRequestResponse> handleClientRequest(ClientRequest request) {
+        return CompletableFuture.supplyAsync(() -> this.role.handleClientRequest(request));
     }
 
     public void appendEntryToLog(String command) {
@@ -221,4 +183,16 @@ public class RaftNode {
         String address = this.getConfig().getAddressFromId(nodeId);
         return this.communicationLayer.sendRPCAppendEntriesRequest(request, address);
     }
+    public CompletableFuture<RPCVoteRequestResponse> sendRPCVoteRequest(int nodeId) {
+        RPCVoteRequestRequest request = new RPCVoteRequestRequest(
+                this.getCurrentTerm(),
+                this.getId(),
+                this.getLog().getLastLogIndex(),
+                this.getLog().getLastLogTerm()
+        );
+
+        String address = this.getConfig().getAddressFromId(nodeId);
+        return CompletableFuture.supplyAsync(() -> this.communicationLayer.sendRPCVoteRequest(request, address));
+    }
+
 }
