@@ -16,9 +16,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class RaftNode {
 
@@ -152,7 +150,6 @@ public class RaftNode {
     }
 
     public void appendEntryToLog(String command) {
-
         this.getLog().appendEntry(this.getCurrentTerm(), command);
         this.onStateChanged();
     }

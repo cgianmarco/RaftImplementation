@@ -28,15 +28,6 @@ public class Leader extends Role {
         super(node);
         this.initializeLeaderState();
 
-        RPCAppendEntriesRequest request = new RPCAppendEntriesRequest(
-                node.getCurrentTerm(),
-                node.getId(),
-                node.getPrevLogIndex(),
-                node.getPrevLogTerm(),
-                new ArrayList<>(),
-                node.getLog().getCommitIndex()
-        );
-
         List<CompletableFuture<RPCAppendEntriesResponse>> responses = node.forAllOtherNodes(nodeId -> node.sendRPCAppendEntriesRequest(new ArrayList<>(), nodeId));
 
         responses.forEach(future -> future
@@ -79,12 +70,6 @@ public class Leader extends Role {
     public void onHeartbeatTimeoutElapsed() {
         this.node.getLog().updateCommitIndex(this.matchIndex, this.node.getCurrentTerm());
         this.node.forAllOtherNodes(nodeId -> sendEntriesOrHeartbeat(nodeId));
-    }
-
-    public void transitionToLeader() {
-        this.timer.cancel();
-        // System.out.println("Node " + node.getId() + " passing from " + this.getClass().toString() + " to Follower");
-        node.setRole(new Leader(node));
     }
 
 
@@ -139,8 +124,6 @@ public class Leader extends Role {
         } catch (Exception e) {
             return new ClientRequestResponse(false);
         }
-
-        //return new ClientRequestResponse(true); // Will become ClientRequestResponse(result)
     }
 
 

@@ -8,7 +8,6 @@ import raft.response.RPCAppendEntriesResponse;
 import raft.response.RPCVoteRequestResponse;
 import raft.tasks.ElectionTask;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Timer;
